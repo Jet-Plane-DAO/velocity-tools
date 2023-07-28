@@ -1,8 +1,7 @@
 import { useCallback, useState } from 'react';
-import PropTypes from 'prop-types';
-import { useWallet } from '@meshsdk/react';
 import { Transaction } from '@meshsdk/core';
 import { LOVELACE_MULTIPLIER } from '../../helpers/ada';
+import PropTypes from 'prop-types';
 
 type IUseStakingCampaign = {
   check: () => void;
@@ -58,16 +57,15 @@ export enum StakingStatusEnum {
  *    }
  */
 
-export const useStakingCampaign = (): IUseStakingCampaign => {
-  const { connected, wallet } = useWallet();
+export const useStakingCampaign = (wallet: any): IUseStakingCampaign => {
   const [stakingData, setStakingData] = useState(null);
   const [status, setStatus] = useState<StakingStatusEnum>(StakingStatusEnum.INIT);
   const [campaignConfig, setConfigData] = useState<any | null>(null);
 
   const check = useCallback(() => {
-    if (connected && status === StakingStatusEnum.INIT) {
+    if (status === StakingStatusEnum.INIT) {
       setStatus(StakingStatusEnum.CHECKING);
-      wallet.getRewardAddresses().then((addresses) => {
+      wallet.getRewardAddresses().then((addresses: any) => {
         const stakeKey = addresses[0];
         const requestHeaders: HeadersInit = new Headers();
         requestHeaders.set(
@@ -126,9 +124,7 @@ export const useStakingCampaign = (): IUseStakingCampaign => {
 };
 
 useStakingCampaign.PropTypes = {
-  initialValue: PropTypes.number.isRequired,
+  wallet: PropTypes.object.isRequired,
 };
 
-useStakingCampaign.defaultProps = {
-  initialValue: 0,
-};
+useStakingCampaign.defaultProps = {};
