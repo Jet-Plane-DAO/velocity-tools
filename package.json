@@ -2,7 +2,7 @@
   "name": "@jetplane/launch-tools",
   "version": "0.0.0",
   "description": "Jetplane Launch tools",
-  "author": "nekogd",
+  "author": "WolfRayet",
   "license": "Apache-2.0",
   "repository": "jetplane/launch-tools",
   "main": "dist/index.js",
