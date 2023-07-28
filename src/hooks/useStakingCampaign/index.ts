@@ -105,7 +105,7 @@ export const useStakingCampaign = (Transaction: any): IUseStakingCampaign => {
       setStatus(StakingStatusEnum.REGISTRATION_PENDING);
       return;
     },
-    [status],
+    [status, campaignConfig],
   );
 
   const claim = useCallback(
@@ -123,7 +123,7 @@ export const useStakingCampaign = (Transaction: any): IUseStakingCampaign => {
       setStatus(StakingStatusEnum.CLAIM_PENDING);
       return;
     },
-    [status],
+    [status, campaignConfig],
   );
 
   return { check, register, claim, campaignConfig, status, stakingData };
