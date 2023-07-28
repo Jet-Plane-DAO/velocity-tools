@@ -13,7 +13,8 @@
   "scripts": {
     "build": "rollup -c",
     "start": "rollup -c -w",
-    "test": "jest"
+    "test": "jest",
+    "publish-patch": "npm run build && npm version patch && npm publish"
   },
   "jest": {
     "transform": {
@@ -29,10 +30,18 @@
       "<rootDir>/dist/"
     ]
   },
+  "browser": {
+    "@emurgo/cardano-message-signing-nodejs": "@emurgo/cardano-message-signing-browser",
+    "@emurgo/cardano-serialization-lib-nodejs": "@emurgo/cardano-serialization-lib-browser"
+  },
   "peerDependencies": {
     "@meshsdk/core": "1.5.1",
     "react-dom": "17.x || 18.x",
-    "react": "17.x || 18.x"
+    "react": "17.x || 18.x",
+    "@emurgo/cardano-message-signing-browser": "1.0.1",
+    "@emurgo/cardano-message-signing-nodejs": "1.0.1",
+    "@emurgo/cardano-serialization-lib-browser": "11.3.0",
+    "@emurgo/cardano-serialization-lib-nodejs": "11.3.0"
   },
   "devDependencies": {
     "@testing-library/react-hooks": "^3.4.1",
