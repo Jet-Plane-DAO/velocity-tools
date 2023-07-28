@@ -10,10 +10,10 @@ type IUseStakingCampaign = {
   claim: () => void;
   campaignConfig: any;
   stakingData: any;
-  status: StakingStatus;
+  status: StakingStatusEnum;
 };
 
-enum StakingStatus {
+export enum StakingStatusEnum {
   STAKED = 'STAKED',
   UNSTAKED = 'UNSTAKED',
   INIT = 'INIT',
@@ -61,12 +61,12 @@ enum StakingStatus {
 export const useStakingCampaign = (): IUseStakingCampaign => {
   const { connected, wallet } = useWallet();
   const [stakingData, setStakingData] = useState(null);
-  const [status, setStatus] = useState<StakingStatus>(StakingStatus.INIT);
+  const [status, setStatus] = useState<StakingStatusEnum>(StakingStatusEnum.INIT);
   const [campaignConfig, setConfigData] = useState<any | null>(null);
 
   const check = useCallback(() => {
-    if (connected && status === StakingStatus.INIT) {
-      setStatus(StakingStatus.CHECKING);
+    if (connected && status === StakingStatusEnum.INIT) {
+      setStatus(StakingStatusEnum.CHECKING);
       wallet.getRewardAddresses().then((addresses) => {
         const stakeKey = addresses[0];
         const requestHeaders: HeadersInit = new Headers();
@@ -82,9 +82,9 @@ export const useStakingCampaign = (): IUseStakingCampaign => {
             const data = await res.json();
             setStakingData(data.status);
             setConfigData(data.config);
-            setStatus(StakingStatus.STAKED);
+            setStatus(StakingStatusEnum.STAKED);
           } else {
-            setStatus(StakingStatus.UNSTAKED);
+            setStatus(StakingStatusEnum.UNSTAKED);
           }
           return;
         });
@@ -93,8 +93,8 @@ export const useStakingCampaign = (): IUseStakingCampaign => {
   }, []);
 
   const register = useCallback(async () => {
-    if (status !== StakingStatus.UNSTAKED) return;
-    setStatus(StakingStatus.REGISTERING);
+    if (status !== StakingStatusEnum.UNSTAKED) return;
+    setStatus(StakingStatusEnum.REGISTERING);
 
     const tx = new Transaction({ initiator: wallet }).sendLovelace(
       campaignConfig!.walletAddress,
@@ -103,13 +103,13 @@ export const useStakingCampaign = (): IUseStakingCampaign => {
     const unsignedTx = await tx.build();
     const signedTx = await wallet.signTx(unsignedTx);
     await wallet.submitTx(signedTx);
-    setStatus(StakingStatus.REGISTRATION_PENDING);
+    setStatus(StakingStatusEnum.REGISTRATION_PENDING);
     return;
   }, [status]);
 
   const claim = useCallback(async () => {
-    if (status !== StakingStatus.STAKED) return;
-    setStatus(StakingStatus.CLAIMING);
+    if (status !== StakingStatusEnum.STAKED) return;
+    setStatus(StakingStatusEnum.CLAIMING);
     const tx = new Transaction({ initiator: wallet }).sendLovelace(
       campaignConfig.walletAddress,
       `${campaignConfig.claimFee * LOVELACE_MULTIPLIER}`,
@@ -118,7 +118,7 @@ export const useStakingCampaign = (): IUseStakingCampaign => {
     const signedTx = await wallet.signTx(unsignedTx);
     await wallet.submitTx(signedTx);
 
-    setStatus(StakingStatus.CLAIM_PENDING);
+    setStatus(StakingStatusEnum.CLAIM_PENDING);
     return;
   }, [status]);
 
