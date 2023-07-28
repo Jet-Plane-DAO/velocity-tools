@@ -35,7 +35,7 @@
     "@emurgo/cardano-serialization-lib-nodejs": "@emurgo/cardano-serialization-lib-browser"
   },
   "peerDependencies": {
-    "@meshsdk/core": "1.5.4",
+    "@meshsdk/core": "1.5.2",
     "react-dom": "17.x || 18.x",
     "react": "17.x || 18.x",
     "@emurgo/cardano-message-signing-browser": "1.0.1",

@@ -631,10 +631,10 @@
     "@jridgewell/resolve-uri" "3.1.0"
     "@jridgewell/sourcemap-codec" "1.4.14"
 
-"@meshsdk/core@1.5.4":
-  version "1.5.4"
-  resolved "https://registry.npmjs.org/@meshsdk/core/-/core-1.5.4.tgz"
-  integrity sha512-AdbaVU8WGHk/DAI9tRR79Ruq8G1oTumy54iTarjCeGITOjsobcoppCKSnzi4RKo/KNkMDFi56MRHv3Qq2P3jYA==
+"@meshsdk/core@1.5.2":
+  version "1.5.2"
+  resolved "https://registry.npmjs.org/@meshsdk/core/-/core-1.5.2.tgz"
+  integrity sha512-KrrN2G3DpieTyutoghwyCp2keWfK4VNx9pyS/jT3rI3PQWwCYKSIOK1cjVbBDk0F2r4qEpwlZWHm1qY1MMNDpg==
   dependencies:
     "@emurgo/cardano-message-signing-browser" "1.0.1"
     "@emurgo/cardano-message-signing-nodejs" "1.0.1"
