@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { Transaction } from '@meshsdk/core';
+
 import { LOVELACE_MULTIPLIER } from '../../helpers/ada';
 import PropTypes from 'prop-types';
 
@@ -57,7 +57,10 @@ export enum StakingStatusEnum {
  *    }
  */
 
-export const useStakingCampaign = (wallet: any): IUseStakingCampaign => {
+export const useStakingCampaign = (
+  wallet: any,
+  Transaction: any,
+): IUseStakingCampaign => {
   const [stakingData, setStakingData] = useState(null);
   const [status, setStatus] = useState<StakingStatusEnum>(StakingStatusEnum.INIT);
   const [campaignConfig, setConfigData] = useState<any | null>(null);
