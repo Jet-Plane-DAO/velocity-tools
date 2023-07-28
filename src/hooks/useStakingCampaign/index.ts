@@ -2,12 +2,11 @@ import { useCallback, useState } from 'react';
 
 import { LOVELACE_MULTIPLIER } from '../../helpers/ada';
 import PropTypes from 'prop-types';
-import { Transaction, BrowserWallet } from '@meshsdk/core';
 
 type IUseStakingCampaign = {
-  check: (wallet: BrowserWallet) => void;
-  register: (wallet: BrowserWallet) => void;
-  claim: (wallet: BrowserWallet) => void;
+  check: (wallet: any) => void;
+  register: (wallet: any) => void;
+  claim: (wallet: any) => void;
   campaignConfig: any;
   stakingData: any;
   status: StakingStatusEnum;
@@ -58,12 +57,12 @@ export enum StakingStatusEnum {
  *    }
  */
 
-export const useStakingCampaign = (): IUseStakingCampaign => {
+export const useStakingCampaign = (Transaction: any): IUseStakingCampaign => {
   const [stakingData, setStakingData] = useState(null);
   const [status, setStatus] = useState<StakingStatusEnum>(StakingStatusEnum.INIT);
   const [campaignConfig, setConfigData] = useState<any | null>(null);
 
-  const check = useCallback((wallet: BrowserWallet) => {
+  const check = useCallback((wallet: any) => {
     if (status === StakingStatusEnum.INIT) {
       setStatus(StakingStatusEnum.CHECKING);
       wallet.getRewardAddresses().then((addresses: any) => {
@@ -92,7 +91,7 @@ export const useStakingCampaign = (): IUseStakingCampaign => {
   }, []);
 
   const register = useCallback(
-    async (wallet: BrowserWallet) => {
+    async (wallet: any) => {
       if (status !== StakingStatusEnum.UNSTAKED) return;
       setStatus(StakingStatusEnum.REGISTERING);
 
@@ -110,7 +109,7 @@ export const useStakingCampaign = (): IUseStakingCampaign => {
   );
 
   const claim = useCallback(
-    async (wallet: BrowserWallet) => {
+    async (wallet: any) => {
       if (status !== StakingStatusEnum.STAKED) return;
       setStatus(StakingStatusEnum.CLAIMING);
       const tx = new Transaction({ initiator: wallet }).sendLovelace(
@@ -131,7 +130,7 @@ export const useStakingCampaign = (): IUseStakingCampaign => {
 };
 
 useStakingCampaign.PropTypes = {
-  wallet: PropTypes.object.isRequired,
+  Transaction: PropTypes.object.isRequired,
 };
 
 useStakingCampaign.defaultProps = {};
