@@ -3,22 +3,21 @@ import { useCallback, useState } from 'react';
 import { LOVELACE_MULTIPLIER } from '../../helpers/ada';
 import PropTypes from 'prop-types';
 
-type IUseStakingCampaign = {
+type IUseCraftingCampaign = {
   check: (wallet: any) => void;
-  register: (wallet: any) => void;
-  claim: (wallet: any) => void;
+  craft: (wallet: any, planId: string, input: string) => void;
+  claim: (wallet: any, craftId: string) => void;
   campaignConfig: any;
-  stakingData: any;
-  status: StakingStatusEnum;
+  craftingData: any;
+  status: CraftingStatusEnum;
 };
 
-export enum StakingStatusEnum {
-  STAKED = 'STAKED',
-  UNSTAKED = 'UNSTAKED',
+export enum CraftingStatusEnum {
   INIT = 'INIT',
   CHECKING = 'CHECKING',
-  REGISTERING = 'REGISTERING',
-  REGISTRATION_PENDING = 'REGISTRATION_PENDING',
+  READY = 'READY',
+  CRAFTING = 'CRAFTING',
+  CRAFTING_PENDING = 'CRAFTING_PENDING',
   CLAIMING = 'CLAIMING',
   CLAIM_PENDING = 'CLAIM_PENDING',
 }
@@ -36,7 +35,7 @@ export enum StakingStatusEnum {
  * @property {()=>void} claim
  *           the increment function
  *
- * @property {()=>void} register
+ * @property {()=>void} craft
  *           the decrement function
  *
  * @property {()=>void} check
@@ -57,14 +56,14 @@ export enum StakingStatusEnum {
  *    }
  */
 
-export const useStakingCampaign = (Transaction: any): IUseStakingCampaign => {
-  const [stakingData, setStakingData] = useState(null);
-  const [status, setStatus] = useState<StakingStatusEnum>(StakingStatusEnum.INIT);
+export const useCraftingCampaign = (Transaction: any): IUseCraftingCampaign => {
+  const [craftingData, setCraftingData] = useState(null);
+  const [status, setStatus] = useState<CraftingStatusEnum>(CraftingStatusEnum.INIT);
   const [campaignConfig, setConfigData] = useState<any | null>(null);
 
   const check = useCallback((wallet: any) => {
-    if (status === StakingStatusEnum.INIT) {
-      setStatus(StakingStatusEnum.CHECKING);
+    if (status === CraftingStatusEnum.INIT) {
+      setStatus(CraftingStatusEnum.CHECKING);
       wallet.getRewardAddresses().then((addresses: any) => {
         const stakeKey = addresses[0];
         const requestHeaders: HeadersInit = new Headers();
@@ -73,18 +72,18 @@ export const useStakingCampaign = (Transaction: any): IUseStakingCampaign => {
           process.env.NEXT_PUBLIC_LAUNCH_API_KEY ?? '',
         );
         fetch(
-          `${process.env.NEXT_PUBLIC_LAUNCH_API}/campaign/${process.env.NEXT_PUBLIC_LAUNCH_STAKING_CAMPAIGN_NAME}/check/${stakeKey}`,
+          `${process.env.NEXT_PUBLIC_LAUNCH_API}/campaign/${process.env.NEXT_PUBLIC_LAUNCH_CRAFTING_CAMPAIGN_NAME}/check/${stakeKey}`,
           { headers: requestHeaders },
         ).then(async (res) => {
           if (res.status === 200) {
             const data = await res.json();
-            setStakingData(data.status);
+            setCraftingData(data.status);
             setConfigData(data.config);
-            setStatus(StakingStatusEnum.STAKED);
+            setStatus(CraftingStatusEnum.READY);
           } else {
             const data = await res.json();
             setConfigData(data.config);
-            setStatus(StakingStatusEnum.UNSTAKED);
+            setStatus(CraftingStatusEnum.READY);
           }
           return;
         });
@@ -92,28 +91,40 @@ export const useStakingCampaign = (Transaction: any): IUseStakingCampaign => {
     }
   }, []);
 
-  const register = useCallback(
-    async (wallet: any) => {
-      if (status !== StakingStatusEnum.UNSTAKED) return;
-      setStatus(StakingStatusEnum.REGISTERING);
+  const craft = useCallback(
+    async (wallet: any, planId: string, input: string) => {
+      if (status !== CraftingStatusEnum.READY) return;
 
-      const tx = new Transaction({ initiator: wallet }).sendLovelace(
-        campaignConfig!.walletAddress,
-        `${campaignConfig!.registrationFee}`,
-      );
+      const plan = campaignConfig!.plans.find((p: any) => p.id === planId);
+      if (!plan) throw new Error('Plan not found');
+
+      setStatus(CraftingStatusEnum.CRAFTING);
+
+      const tx = new Transaction({ initiator: wallet })
+        .sendLovelace(
+          campaignConfig!.walletAddress,
+          `${campaignConfig!.registrationFee}`,
+        )
+        .setAssets([
+          {
+            unit: campaignConfig.tokenAssetName,
+            quantity: `${plan.price}`,
+          },
+        ])
+        .setMetadata({ input, planId });
       const unsignedTx = await tx.build();
       const signedTx = await wallet.signTx(unsignedTx);
       await wallet.submitTx(signedTx);
-      setStatus(StakingStatusEnum.REGISTRATION_PENDING);
+      setStatus(CraftingStatusEnum.CRAFTING_PENDING);
       return;
     },
     [status, campaignConfig],
   );
 
   const claim = useCallback(
-    async (wallet: any) => {
-      if (status !== StakingStatusEnum.STAKED) return;
-      setStatus(StakingStatusEnum.CLAIMING);
+    async (wallet: any, craftId: string) => {
+      if (status !== CraftingStatusEnum.READY) return;
+      setStatus(CraftingStatusEnum.CLAIMING);
       const tx = new Transaction({ initiator: wallet }).sendLovelace(
         campaignConfig.walletAddress,
         `${campaignConfig.claimFee * LOVELACE_MULTIPLIER}`,
@@ -122,17 +133,17 @@ export const useStakingCampaign = (Transaction: any): IUseStakingCampaign => {
       const signedTx = await wallet.signTx(unsignedTx);
       await wallet.submitTx(signedTx);
 
-      setStatus(StakingStatusEnum.CLAIM_PENDING);
+      setStatus(CraftingStatusEnum.CLAIM_PENDING);
       return;
     },
     [status, campaignConfig],
   );
 
-  return { check, register, claim, campaignConfig, status, stakingData };
+  return { check, craft, claim, campaignConfig, status, craftingData };
 };
 
-useStakingCampaign.PropTypes = {
+useCraftingCampaign.PropTypes = {
   Transaction: PropTypes.object.isRequired,
 };
 
-useStakingCampaign.defaultProps = {};
+useCraftingCampaign.defaultProps = {};
