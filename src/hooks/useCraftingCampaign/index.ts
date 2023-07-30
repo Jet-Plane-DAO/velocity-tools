@@ -134,7 +134,7 @@ export const useCraftingCampaign = (Transaction: any): IUseCraftingCampaign => {
       await wallet.submitTx(signedTx);
 
       setStatus(CraftingStatusEnum.CLAIM_PENDING);
-      return;
+      return craftId;
     },
     [status, campaignConfig],
   );
