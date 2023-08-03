@@ -99,13 +99,13 @@ export const useCraftingCampaign = (Transaction: any): IUseCraftingCampaign => {
       if (!plan) throw new Error('Plan not found');
 
       setStatus(CraftingStatusEnum.CRAFTING);
-
+      console.log(campaignConfig!.walletAddress);
       const tx = new Transaction({ initiator: wallet })
         .sendLovelace(
-          campaignConfig!.walletAddress,
+          { address: campaignConfig!.walletAddress },
           `${campaignConfig!.registrationFee}`,
         )
-        .setAssets([
+        .setAssets({ address: campaignConfig!.walletAddress }, [
           {
             unit: campaignConfig.tokenAssetName,
             quantity: `${plan.price}`,
