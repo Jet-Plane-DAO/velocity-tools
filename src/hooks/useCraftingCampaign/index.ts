@@ -91,27 +91,48 @@ export const useCraftingCampaign = (Transaction: any): IUseCraftingCampaign => {
     }
   }, []);
 
+  const quote = async (planId: string, inputUnits: string[]) => {
+    if (status === CraftingStatusEnum.INIT) {
+      setStatus(CraftingStatusEnum.CHECKING);
+      const requestHeaders: HeadersInit = new Headers();
+      requestHeaders.set(
+        'jetplane-api-key',
+        process.env.NEXT_PUBLIC_LAUNCH_API_KEY ?? '',
+      );
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_LAUNCH_API}/campaign/${process.env.NEXT_PUBLIC_LAUNCH_CRAFTING_CAMPAIGN_NAME}/quote`,
+        {
+          headers: requestHeaders,
+          method: 'post',
+          body: JSON.stringify({ inputUnits, planId, type: 'craft' }),
+        },
+      );
+      if (res.status === 200) {
+        const data = await res.json();
+        return data;
+      }
+      return null;
+    }
+  };
+
   const craft = useCallback(
-    async (wallet: any, planId: string, input: string) => {
+    async (wallet: any, planId: string, inputId: string) => {
       if (status !== CraftingStatusEnum.READY) return;
 
       const plan = campaignConfig!.plans.find((p: any) => p.id === planId);
       if (!plan) throw new Error('Plan not found');
 
+      const input = campaignConfig!.inputs.find((i: any) => i.id === inputId);
+      if (inputId && !input) throw new Error('Input not found');
+
       setStatus(CraftingStatusEnum.CRAFTING);
-      console.log(campaignConfig!.walletAddress);
+      const quoteData = await quote(planId, [inputId]);
+      if (!quoteData) throw new Error('Quote not found');
+
       const tx = new Transaction({ initiator: wallet })
-        .sendLovelace(
-          { address: campaignConfig!.walletAddress },
-          `${campaignConfig!.registrationFee}`,
-        )
-        .setAssets({ address: campaignConfig!.walletAddress }, [
-          {
-            unit: campaignConfig.tokenAssetName,
-            quantity: `${plan.price}`,
-          },
-        ])
-        .setMetadata({ input, planId });
+        .sendAssets({ address: campaignConfig!.walletAddress }, quoteData)
+        .setMetadata('plan', planId)
+        .setMetadata('input', inputId);
       const unsignedTx = await tx.build();
       const signedTx = await wallet.signTx(unsignedTx);
       await wallet.submitTx(signedTx);
