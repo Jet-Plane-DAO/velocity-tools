@@ -7,6 +7,7 @@ type IUseCraftingCampaign = {
   check: (wallet: any) => void;
   craft: (wallet: any, planId: string, input: string) => void;
   claim: (wallet: any, craftId: string) => void;
+  quote: (planId: string, inputUnits: string[]) => Promise<any>;
   campaignConfig: any;
   craftingData: any;
   status: CraftingStatusEnum;
@@ -164,7 +165,7 @@ export const useCraftingCampaign = (Transaction: any): IUseCraftingCampaign => {
     [status, campaignConfig],
   );
 
-  return { check, craft, claim, campaignConfig, status, craftingData };
+  return { check, craft, claim, campaignConfig, status, craftingData, quote };
 };
 
 useCraftingCampaign.PropTypes = {
