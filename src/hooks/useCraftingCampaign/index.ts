@@ -93,29 +93,26 @@ export const useCraftingCampaign = (Transaction: any): IUseCraftingCampaign => {
   }, []);
 
   const quote = async (planId: string, inputUnits: string[]) => {
-    if (status === CraftingStatusEnum.INIT) {
-      setStatus(CraftingStatusEnum.CHECKING);
-      const requestHeaders: HeadersInit = new Headers();
-      requestHeaders.set(
-        'jetplane-api-key',
-        process.env.NEXT_PUBLIC_LAUNCH_API_KEY ?? '',
-      );
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_LAUNCH_API}/campaign/${process.env.NEXT_PUBLIC_LAUNCH_CRAFTING_CAMPAIGN_NAME}/quote`,
-        {
-          headers: requestHeaders,
-          method: 'post',
-          body: JSON.stringify({ inputUnits, planId, type: 'craft' }),
-        },
-      );
-      const data = await res.json();
-      if (res.status === 422) {
-        return { status: 'error', message: data.message };
-      }
-      if (res.status === 200) {
-        setQuoteData(data);
-        return { status: 'OK', quote: data };
-      }
+    const requestHeaders: HeadersInit = new Headers();
+    requestHeaders.set(
+      'jetplane-api-key',
+      process.env.NEXT_PUBLIC_LAUNCH_API_KEY ?? '',
+    );
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_LAUNCH_API}/campaign/${process.env.NEXT_PUBLIC_LAUNCH_CRAFTING_CAMPAIGN_NAME}/quote`,
+      {
+        headers: requestHeaders,
+        method: 'post',
+        body: JSON.stringify({ inputUnits, planId, type: 'craft' }),
+      },
+    );
+    const data = await res.json();
+    if (res.status === 422) {
+      return { status: 'error', message: data.message };
+    }
+    if (res.status === 200) {
+      setQuoteData(data);
+      return { status: 'OK', quote: data };
     }
     return quoteData ? { status: 'OK', quote: quoteData } : null;
   };
