@@ -60,7 +60,7 @@ export const useCraftingCampaign = (Transaction: any): IUseCraftingCampaign => {
   const [craftingData, setCraftingData] = useState(null);
   const [status, setStatus] = useState<CraftingStatusEnum>(CraftingStatusEnum.INIT);
   const [campaignConfig, setConfigData] = useState<any | null>(null);
-
+  const [quoteData, setQuoteData] = useState<any | null>(null);
   const check = useCallback((wallet: any) => {
     if (status === CraftingStatusEnum.INIT) {
       setStatus(CraftingStatusEnum.CHECKING);
@@ -107,12 +107,16 @@ export const useCraftingCampaign = (Transaction: any): IUseCraftingCampaign => {
           body: JSON.stringify({ inputUnits, planId, type: 'craft' }),
         },
       );
-      if (res.status === 200) {
-        const data = await res.json();
-        return data;
+      const data = await res.json();
+      if (res.status === 422) {
+        return { status: 'error', message: data.message };
       }
-      return null;
+      if (res.status === 200) {
+        setQuoteData(data);
+        return { status: 'OK', quote: data };
+      }
     }
+    return quoteData ? { status: 'OK', quote: quoteData } : null;
   };
 
   const craft = useCallback(
