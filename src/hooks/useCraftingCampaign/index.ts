@@ -1,11 +1,12 @@
 import { useCallback, useState } from 'react';
+import { largestFirstMultiAsset } from '@meshsdk/core';
 
 import { LOVELACE_MULTIPLIER } from '../../helpers/ada';
 import PropTypes from 'prop-types';
 
 type IUseCraftingCampaign = {
   check: (wallet: any) => void;
-  craft: (wallet: any, planId: string, input: string) => void;
+  craft: (wallet: any, planId: string, input: any[]) => void;
   claim: (wallet: any, craftId: string) => void;
   quote: (planId: string, inputUnits: string[]) => Promise<any>;
   campaignConfig: any;
@@ -118,31 +119,91 @@ export const useCraftingCampaign = (Transaction: any): IUseCraftingCampaign => {
   };
 
   const craft = useCallback(
-    async (wallet: any, planId: string, inputId: string) => {
-      if (status !== CraftingStatusEnum.READY) return;
-
+    async (wallet: any, planId: string, selectedInputs: any[]) => {
       const plan = campaignConfig!.plans.find((p: any) => p.id === planId);
       if (!plan) throw new Error('Plan not found');
 
-      const input = campaignConfig!.inputs.find((i: any) => i.id === inputId);
-      if (inputId && !input) throw new Error('Input not found');
+      for (const i of selectedInputs) {
+        const input = campaignConfig!.inputs.find(
+          (x: any) => x.policyId === i.policyId,
+        );
+        if (!input) throw new Error('Input not found');
+      }
 
-      setStatus(CraftingStatusEnum.CRAFTING);
-      const quoteData = await quote(planId, [inputId]);
-      if (!quoteData) throw new Error('Quote not found');
+      const quoteData = await quote(
+        planId,
+        selectedInputs.map((i) => i.unit),
+      );
+      if (!quoteData?.quote) throw new Error('Quote not found');
+
+      const utxos = await wallet.getUtxos();
+
+      const assetMap = new Map();
+      assetMap.set(campaignConfig.tokenAssetName, `${quoteData.quote.price}`);
+      const selectedUtxos = largestFirstMultiAsset(assetMap, utxos, true);
 
       const tx = new Transaction({ initiator: wallet })
-        .sendAssets({ address: campaignConfig!.walletAddress }, quoteData)
-        .setMetadata('plan', planId)
-        .setMetadata('input', inputId);
+        .setTxInputs(selectedUtxos)
+        .sendAssets({ address: campaignConfig.walletAddress }, [
+          {
+            unit: campaignConfig.tokenAssetName,
+            quantity: `${quoteData.quote.price}`,
+          },
+        ])
+        .setMetadata(0, planId);
+
+      let ix = 1;
+      selectedInputs.forEach((i) => {
+        if (i.unit.length > 64) {
+          tx.setMetadata(ix, i.unit.slice(0, 56));
+          ix += 1;
+          tx.setMetadata(ix, i.unit.slice(56 + 1));
+          ix += 1;
+        } else {
+          tx.setMetadata(ix, i.unit);
+          ix += 1;
+        }
+      });
+
       const unsignedTx = await tx.build();
       const signedTx = await wallet.signTx(unsignedTx);
       await wallet.submitTx(signedTx);
-      setStatus(CraftingStatusEnum.CRAFTING_PENDING);
       return;
     },
     [status, campaignConfig],
   );
+
+  // const craft = useCallback(
+  //   async (wallet: any, planId: string, inputId: string) => {
+  //     if (status !== CraftingStatusEnum.READY) return;
+
+  //     const plan = campaignConfig!.plans.find((p: any) => p.id === planId);
+  //     if (!plan) throw new Error('Plan not found');
+
+  //     const input = campaignConfig!.inputs.find((i: any) => i.id === inputId);
+  //     if (inputId && !input) throw new Error('Input not found');
+
+  //     setStatus(CraftingStatusEnum.CRAFTING);
+  //     const quoteData = await quote(planId, [inputId]);
+  //     if (!quoteData) throw new Error('Quote not found');
+
+  //     const tx = new Transaction({ initiator: wallet })
+  //       .sendAssets({ address: campaignConfig!.walletAddress }, [
+  //         {
+  //           unit: campaignConfig!.tokenAssetName,
+  //           quantity: quoteData?.quote.price,
+  //         },
+  //       ])
+  //       .setMetadata('plan', planId)
+  //       .setMetadata('input', inputId);
+  //     const unsignedTx = await tx.build();
+  //     const signedTx = await wallet.signTx(unsignedTx);
+  //     await wallet.submitTx(signedTx);
+  //     setStatus(CraftingStatusEnum.CRAFTING_PENDING);
+  //     return;
+  //   },
+  //   [status, campaignConfig],
+  // );
 
   const claim = useCallback(
     async (wallet: any, craftId: string) => {
