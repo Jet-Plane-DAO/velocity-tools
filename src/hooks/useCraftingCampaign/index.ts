@@ -148,14 +148,21 @@ export const useCraftingCampaign = (Transaction: any): IUseCraftingCampaign => {
       const utxos = await wallet.getUtxos();
 
       const assetMap = new Map();
-      assetMap.set(campaignConfig.tokenAssetName, `${quoteData.quote.price}`);
+      assetMap.set(
+        campaignConfig.testnet
+          ? campaignConfig.testnetTokenAssetName
+          : campaignConfig.tokenAssetName,
+        `${quoteData.quote.price}`,
+      );
       const selectedUtxos = largestFirstMultiAsset(assetMap, utxos, true);
 
       const tx = new Transaction({ initiator: wallet })
         .setTxInputs(selectedUtxos)
         .sendAssets({ address: campaignConfig.walletAddress }, [
           {
-            unit: campaignConfig.tokenAssetName,
+            unit: campaignConfig.testnet
+              ? campaignConfig.testnetTokenAssetName
+              : campaignConfig.tokenAssetName,
             quantity: `${quoteData.quote.price}`,
           },
         ])
