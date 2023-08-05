@@ -1,12 +1,16 @@
 import { useCallback, useState } from 'react';
-import { largestFirstMultiAsset } from '@meshsdk/core';
 
 import { LOVELACE_MULTIPLIER } from '../../helpers/ada';
 import PropTypes from 'prop-types';
 
 type IUseCraftingCampaign = {
   check: (wallet: any) => void;
-  craft: (wallet: any, planId: string, input: any[]) => void;
+  craft: (
+    wallet: any,
+    planId: string,
+    input: any[],
+    largestFirstMultiAsset: any,
+  ) => void;
   claim: (wallet: any, craftId: string) => void;
   quote: (planId: string, inputUnits: string[]) => Promise<any>;
   campaignConfig: any;
@@ -119,7 +123,12 @@ export const useCraftingCampaign = (Transaction: any): IUseCraftingCampaign => {
   };
 
   const craft = useCallback(
-    async (wallet: any, planId: string, selectedInputs: any[]) => {
+    async (
+      wallet: any,
+      planId: string,
+      selectedInputs: any[],
+      largestFirstMultiAsset: any,
+    ) => {
       const plan = campaignConfig!.plans.find((p: any) => p.id === planId);
       if (!plan) throw new Error('Plan not found');
 
