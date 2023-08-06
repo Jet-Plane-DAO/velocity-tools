@@ -160,9 +160,9 @@ export const useCraftingCampaign = (Transaction: any): IUseCraftingCampaign => {
           },
         ])
         .setMetadata(0, 'craft')
-        .setMetadata(0, planId);
+        .setMetadata(1, planId);
 
-      let ix = 1;
+      let ix = 2;
       selectedInputs.forEach((i) => {
         if (i.unit.length > 64) {
           tx.setMetadata(ix, i.unit.slice(0, 56));
