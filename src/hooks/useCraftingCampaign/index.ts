@@ -159,6 +159,7 @@ export const useCraftingCampaign = (Transaction: any): IUseCraftingCampaign => {
             quantity: `${quoteData.quote.price}`,
           },
         ])
+        .setMetadata(0, 'craft')
         .setMetadata(0, planId);
 
       let ix = 1;
