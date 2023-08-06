@@ -167,7 +167,7 @@ export const useCraftingCampaign = (Transaction: any): IUseCraftingCampaign => {
         if (i.unit.length > 64) {
           tx.setMetadata(ix, i.unit.slice(0, 56));
           ix += 1;
-          tx.setMetadata(ix, i.unit.slice(56 + 1));
+          tx.setMetadata(ix, i.unit.slice(56));
           ix += 1;
         } else {
           tx.setMetadata(ix, i.unit);
