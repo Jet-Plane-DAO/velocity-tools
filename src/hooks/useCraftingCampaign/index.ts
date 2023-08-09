@@ -152,15 +152,20 @@ export const useCraftingCampaign = (Transaction: any): IUseCraftingCampaign => {
 
       const assetMap = new Map();
       if (sendingAda) {
-        assetMap.set('lovelace', `${quoteResponse.quote.fee * LOVELACE_MULTIPLIER}`);
+        assetMap.set(
+          'lovelace',
+          `${parseInt(quoteResponse.quote.fee) * LOVELACE_MULTIPLIER}`,
+        );
       }
       if (sendingToken) {
         assetMap.set(campaignConfig.tokenAssetName, `${quoteResponse.quote.price}`);
       }
 
+      console.log('pre-tx', sendingToken);
       const tx = new Transaction({ initiator: wallet }).setTxInputs(
         sendingToken ? largestFirstMultiAsset(assetMap, utxos, true) : utxos,
       );
+      console.log('post-tx');
       if (sendingAda) {
         tx.sendLovelace(
           { address: campaignConfig.walletAddress },
@@ -175,6 +180,7 @@ export const useCraftingCampaign = (Transaction: any): IUseCraftingCampaign => {
           },
         ]);
       }
+      console.log('pre-metadata');
 
       tx.setMetadata(0, 'craft').setMetadata(1, planId);
       console.log('pre-split');
