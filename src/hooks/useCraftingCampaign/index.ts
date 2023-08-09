@@ -161,11 +161,9 @@ export const useCraftingCampaign = (Transaction: any): IUseCraftingCampaign => {
         assetMap.set(campaignConfig.tokenAssetName, `${quoteResponse.quote.price}`);
       }
 
-      console.log('pre-tx', sendingToken);
       const tx = new Transaction({ initiator: wallet }).setTxInputs(
         sendingToken ? largestFirstMultiAsset(assetMap, utxos, true) : utxos,
       );
-      console.log('post-tx');
       if (sendingAda) {
         tx.sendLovelace(
           { address: campaignConfig.walletAddress },
@@ -180,10 +178,8 @@ export const useCraftingCampaign = (Transaction: any): IUseCraftingCampaign => {
           },
         ]);
       }
-      console.log('pre-metadata');
 
       tx.setMetadata(0, 'craft').setMetadata(1, planId);
-      console.log('pre-split');
       let ix = 2;
       selectedInputs.forEach((i) => {
         if (i.unit.length > 64) {
@@ -196,7 +192,6 @@ export const useCraftingCampaign = (Transaction: any): IUseCraftingCampaign => {
           ix += 1;
         }
       });
-      console.log('post-split');
       const unsignedTx = await tx.build();
       const signedTx = await wallet.signTx(unsignedTx);
       await wallet.submitTx(signedTx);
