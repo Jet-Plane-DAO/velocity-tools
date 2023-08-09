@@ -146,30 +146,28 @@ export const useCraftingCampaign = (Transaction: any): IUseCraftingCampaign => {
       if (!quoteResponse?.quote) throw new Error('Quote not found');
 
       const utxos = await wallet.getUtxos();
-      console.log(quote);
+
+      const sendingToken = quoteResponse.quote.price !== '0';
+      const sendingAda = quoteResponse.quote.time === '0';
+
       const assetMap = new Map();
-      if (quoteResponse.quote.time === '0') {
+      if (sendingAda) {
         assetMap.set('lovelace', `${quoteResponse.quote.fee * LOVELACE_MULTIPLIER}`);
-        if (quoteResponse.quote.price !== '0') {
-          assetMap.set(
-            campaignConfig.tokenAssetName,
-            `${quoteResponse.quote.price}`,
-          );
-        }
-      } else {
+      }
+      if (sendingToken) {
         assetMap.set(campaignConfig.tokenAssetName, `${quoteResponse.quote.price}`);
       }
-      console.log(assetMap);
-      const selectedUtxos = largestFirstMultiAsset(assetMap, utxos, true);
 
-      const tx = new Transaction({ initiator: wallet }).setTxInputs(selectedUtxos);
-      if (quoteResponse.quote.time === '0') {
+      const tx = new Transaction({ initiator: wallet }).setTxInputs(
+        sendingToken ? largestFirstMultiAsset(assetMap, utxos, true) : utxos,
+      );
+      if (sendingAda) {
         tx.sendLovelace(
           { address: campaignConfig.walletAddress },
           `${parseInt(quoteResponse.quote.fee) * LOVELACE_MULTIPLIER}`,
         );
       }
-      if (quoteResponse.quote.price !== '0') {
+      if (sendingToken) {
         tx.sendAssets({ address: campaignConfig.walletAddress }, [
           {
             unit: campaignConfig.tokenAssetName,
