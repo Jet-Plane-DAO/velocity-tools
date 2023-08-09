@@ -139,29 +139,47 @@ export const useCraftingCampaign = (Transaction: any): IUseCraftingCampaign => {
         if (!input) throw new Error('Input not found');
       }
 
-      const quoteData = await quote(
+      const quoteResponse = await quote(
         planId,
         selectedInputs.map((i) => i.unit),
       );
-      if (!quoteData?.quote) throw new Error('Quote not found');
+      if (!quoteResponse?.quote) throw new Error('Quote not found');
 
       const utxos = await wallet.getUtxos();
-
+      console.log(quote);
       const assetMap = new Map();
-      assetMap.set(campaignConfig.tokenAssetName, `${quoteData.quote.price}`);
+      if (quoteResponse.quote.time === '0') {
+        assetMap.set('lovelace', `${quoteResponse.quote.fee * LOVELACE_MULTIPLIER}`);
+        if (quoteResponse.quote.price !== '0') {
+          assetMap.set(
+            campaignConfig.tokenAssetName,
+            `${quoteResponse.quote.price}`,
+          );
+        }
+      } else {
+        assetMap.set(campaignConfig.tokenAssetName, `${quoteResponse.quote.price}`);
+      }
+      console.log(assetMap);
       const selectedUtxos = largestFirstMultiAsset(assetMap, utxos, true);
 
-      const tx = new Transaction({ initiator: wallet })
-        .setTxInputs(selectedUtxos)
-        .sendAssets({ address: campaignConfig.walletAddress }, [
+      const tx = new Transaction({ initiator: wallet }).setTxInputs(selectedUtxos);
+      if (quoteResponse.quote.time === '0') {
+        tx.sendLovelace(
+          { address: campaignConfig.walletAddress },
+          `${parseInt(quoteResponse.quote.fee) * LOVELACE_MULTIPLIER}`,
+        );
+      }
+      if (quoteResponse.quote.price !== '0') {
+        tx.sendAssets({ address: campaignConfig.walletAddress }, [
           {
             unit: campaignConfig.tokenAssetName,
-            quantity: `${quoteData.quote.price}`,
+            quantity: `${quoteResponse.quote.price}`,
           },
-        ])
-        .setMetadata(0, 'craft')
-        .setMetadata(1, planId);
+        ]);
+      }
 
+      tx.setMetadata(0, 'craft').setMetadata(1, planId);
+      console.log('pre-split');
       let ix = 2;
       selectedInputs.forEach((i) => {
         if (i.unit.length > 64) {
@@ -174,7 +192,7 @@ export const useCraftingCampaign = (Transaction: any): IUseCraftingCampaign => {
           ix += 1;
         }
       });
-
+      console.log('post-split');
       const unsignedTx = await tx.build();
       const signedTx = await wallet.signTx(unsignedTx);
       await wallet.submitTx(signedTx);
