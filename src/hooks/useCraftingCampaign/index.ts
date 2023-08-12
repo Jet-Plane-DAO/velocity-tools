@@ -137,7 +137,7 @@ export const useCraftingCampaign = (Transaction: any): IUseCraftingCampaign => {
       wallet: any,
       planId: string,
       selectedInputs: any[],
-      concurrent: number = 1,
+      concurrent: number,
       largestFirstMultiAsset: any,
     ) => {
       const plan = campaignConfig!.plans.find((p: any) => p.id === planId);
