@@ -136,6 +136,7 @@ export const useCraftingCampaign = (Transaction: any): IUseCraftingCampaign => {
       wallet: any,
       planId: string,
       selectedInputs: any[],
+      concurrent: number = 1,
       largestFirstMultiAsset: any,
     ) => {
       const plan = campaignConfig!.plans.find((p: any) => p.id === planId);
@@ -151,6 +152,7 @@ export const useCraftingCampaign = (Transaction: any): IUseCraftingCampaign => {
       const quoteResponse = await quote(
         planId,
         selectedInputs.map((i) => i.unit),
+        concurrent,
       );
       if (!quoteResponse?.quote) throw new Error('Quote not found');
 
