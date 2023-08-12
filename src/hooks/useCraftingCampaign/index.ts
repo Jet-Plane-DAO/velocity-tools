@@ -188,8 +188,8 @@ export const useCraftingCampaign = (Transaction: any): IUseCraftingCampaign => {
         ]);
       }
 
-      tx.setMetadata(0, 'craft').setMetadata(1, planId);
-      let ix = 2;
+      tx.setMetadata(0, 'craft').setMetadata(1, planId).setMetadata(2, concurrent);
+      let ix = 3;
       selectedInputs.forEach((i) => {
         if (i.unit.length > 64) {
           tx.setMetadata(ix, i.unit.slice(0, 56));
