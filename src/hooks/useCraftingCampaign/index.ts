@@ -12,7 +12,7 @@ type IUseCraftingCampaign = {
     largestFirstMultiAsset: any,
   ) => void;
   claim: (wallet: any, craftId: string) => void;
-  quote: (planId: string, inputUnits: string[]) => Promise<any>;
+  quote: (planId: string, inputUnits: string[], concurrent?: number) => Promise<any>;
   campaignConfig: any;
   craftingData: any;
   status: CraftingStatusEnum;
@@ -97,7 +97,11 @@ export const useCraftingCampaign = (Transaction: any): IUseCraftingCampaign => {
     }
   }, []);
 
-  const quote = async (planId: string, inputUnits: string[]) => {
+  const quote = async (
+    planId: string,
+    inputUnits: string[],
+    concurrent?: number,
+  ) => {
     const requestHeaders: HeadersInit = new Headers();
     requestHeaders.set(
       'jetplane-api-key',
@@ -108,7 +112,12 @@ export const useCraftingCampaign = (Transaction: any): IUseCraftingCampaign => {
       {
         headers: requestHeaders,
         method: 'post',
-        body: JSON.stringify({ inputUnits, planId, type: 'craft' }),
+        body: JSON.stringify({
+          inputUnits,
+          planId,
+          type: 'craft',
+          concurrent: concurrent ?? 1,
+        }),
       },
     );
     const data = await res.json();
