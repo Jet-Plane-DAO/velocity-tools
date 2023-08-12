@@ -159,15 +159,12 @@ export const useCraftingCampaign = (Transaction: any): IUseCraftingCampaign => {
 
       const utxos = await wallet.getUtxos();
 
-      const sendingToken = quoteResponse.quote.price !== '0';
-      const sendingAda = quoteResponse.quote.time === '0';
+      const sendingToken = quoteResponse.quote.price !== 0;
+      const sendingAda = quoteResponse.quote.time === 0;
 
       const assetMap = new Map();
       if (sendingAda) {
-        assetMap.set(
-          'lovelace',
-          `${parseInt(quoteResponse.quote.fee) * LOVELACE_MULTIPLIER}`,
-        );
+        assetMap.set('lovelace', `${quoteResponse.quote.fee * LOVELACE_MULTIPLIER}`);
       }
       if (sendingToken) {
         assetMap.set(campaignConfig.tokenAssetName, `${quoteResponse.quote.price}`);
@@ -179,7 +176,7 @@ export const useCraftingCampaign = (Transaction: any): IUseCraftingCampaign => {
       if (sendingAda) {
         tx.sendLovelace(
           { address: campaignConfig.walletAddress },
-          `${parseInt(quoteResponse.quote.fee) * LOVELACE_MULTIPLIER}`,
+          `${quoteResponse.quote.fee * LOVELACE_MULTIPLIER}`,
         );
       }
       if (sendingToken) {
