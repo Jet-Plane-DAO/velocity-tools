@@ -9,6 +9,7 @@ type IUseCraftingCampaign = {
     wallet: any,
     planId: string,
     input: any[],
+    concurrent: number,
     largestFirstMultiAsset: any,
   ) => void;
   claim: (wallet: any, craftId: string) => void;
