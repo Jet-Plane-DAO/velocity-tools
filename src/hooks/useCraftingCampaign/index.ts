@@ -68,6 +68,7 @@ export const useCraftingCampaign = (Transaction: any): IUseCraftingCampaign => {
   const [status, setStatus] = useState<CraftingStatusEnum>(CraftingStatusEnum.INIT);
   const [campaignConfig, setConfigData] = useState<any | null>(null);
   const [quoteData, setQuoteData] = useState<any | null>(null);
+
   const check = useCallback((wallet: any) => {
     if (status === CraftingStatusEnum.INIT) {
       setStatus(CraftingStatusEnum.CHECKING);
