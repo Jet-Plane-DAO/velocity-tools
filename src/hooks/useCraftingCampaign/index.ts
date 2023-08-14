@@ -204,8 +204,8 @@ export const useCraftingCampaign = (Transaction: any): IUseCraftingCampaign => {
       });
       const unsignedTx = await tx.build();
       const signedTx = await wallet.signTx(unsignedTx);
-      await wallet.submitTx(signedTx);
-      return;
+      const hash = await wallet.submitTx(signedTx);
+      return hash;
     },
     [status, campaignConfig],
   );
