@@ -68,6 +68,7 @@ export const useCraftingCampaign = (Transaction: any): IUseCraftingCampaign => {
   const [status, setStatus] = useState<CraftingStatusEnum>(CraftingStatusEnum.INIT);
   const [campaignConfig, setConfigData] = useState<any | null>(null);
   const [quoteData, setQuoteData] = useState<any | null>(null);
+
   const check = useCallback((wallet: any) => {
     if (status === CraftingStatusEnum.INIT) {
       setStatus(CraftingStatusEnum.CHECKING);
@@ -188,8 +189,8 @@ export const useCraftingCampaign = (Transaction: any): IUseCraftingCampaign => {
         ]);
       }
 
-      tx.setMetadata(0, 'craft').setMetadata(1, planId).setMetadata(2, concurrent);
-      let ix = 3;
+      tx.setMetadata(0, { t: 'craft', p: planId, c: concurrent });
+      let ix = 1;
       selectedInputs.forEach((i) => {
         if (i.unit.length > 64) {
           tx.setMetadata(ix, i.unit.slice(0, 56));
@@ -203,8 +204,8 @@ export const useCraftingCampaign = (Transaction: any): IUseCraftingCampaign => {
       });
       const unsignedTx = await tx.build();
       const signedTx = await wallet.signTx(unsignedTx);
-      await wallet.submitTx(signedTx);
-      return;
+      const hash = await wallet.submitTx(signedTx);
+      return hash;
     },
     [status, campaignConfig],
   );
