@@ -1,10 +1,10 @@
 {
-  "name": "@jetplane/launch-tools",
+  "name": "@jetplane/velocity-tools",
   "version": "1.0.39",
-  "description": "Jetplane Launch tools",
+  "description": "Velocity tools",
   "author": "WolfRayet",
   "license": "Apache-2.0",
-  "repository": "jetplane/launch-tools",
+  "repository": "jetplane/velocity-tools",
   "main": "dist/index.js",
   "engines": {
     "node": ">=18",

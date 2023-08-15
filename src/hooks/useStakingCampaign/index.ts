@@ -70,10 +70,10 @@ export const useStakingCampaign = (Transaction: any): IUseStakingCampaign => {
         const requestHeaders: HeadersInit = new Headers();
         requestHeaders.set(
           'jetplane-api-key',
-          process.env.NEXT_PUBLIC_LAUNCH_API_KEY ?? '',
+          process.env.NEXT_PUBLIC_VELOCITY_API_KEY ?? '',
         );
         fetch(
-          `${process.env.NEXT_PUBLIC_LAUNCH_API}/campaign/${process.env.NEXT_PUBLIC_LAUNCH_STAKING_CAMPAIGN_NAME}/check/${stakeKey}`,
+          `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${process.env.NEXT_PUBLIC_VELOCITY_STAKING_CAMPAIGN_NAME}/check/${stakeKey}`,
           { headers: requestHeaders },
         ).then(async (res) => {
           if (res.status === 200) {

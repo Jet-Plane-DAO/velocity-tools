@@ -76,10 +76,10 @@ export const useCraftingCampaign = (Transaction: any): IUseCraftingCampaign => {
         const requestHeaders: HeadersInit = new Headers();
         requestHeaders.set(
           'jetplane-api-key',
-          process.env.NEXT_PUBLIC_LAUNCH_API_KEY ?? '',
+          process.env.NEXT_PUBLIC_VELOCITY_API_KEY ?? '',
         );
         fetch(
-          `${process.env.NEXT_PUBLIC_LAUNCH_API}/campaign/${process.env.NEXT_PUBLIC_LAUNCH_CRAFTING_CAMPAIGN_NAME}/check/${stakeKey}`,
+          `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${process.env.NEXT_PUBLIC_VELOCITY_CRAFTING_CAMPAIGN_NAME}/check/${stakeKey}`,
           { headers: requestHeaders },
         ).then(async (res) => {
           if (res.status === 200) {
@@ -106,10 +106,10 @@ export const useCraftingCampaign = (Transaction: any): IUseCraftingCampaign => {
     const requestHeaders: HeadersInit = new Headers();
     requestHeaders.set(
       'jetplane-api-key',
-      process.env.NEXT_PUBLIC_LAUNCH_API_KEY ?? '',
+      process.env.NEXT_PUBLIC_VELOCITY_API_KEY ?? '',
     );
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_LAUNCH_API}/campaign/${process.env.NEXT_PUBLIC_LAUNCH_CRAFTING_CAMPAIGN_NAME}/quote`,
+      `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${process.env.NEXT_PUBLIC_VELOCITY_CRAFTING_CAMPAIGN_NAME}/quote`,
       {
         headers: requestHeaders,
         method: 'post',
