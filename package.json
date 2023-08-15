@@ -4,7 +4,10 @@
   "description": "Velocity tools",
   "author": "WolfRayet",
   "license": "Apache-2.0",
-  "repository": "jetplane/velocity-tools",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jetplane/velocity-tools.git"
+  },
   "main": "dist/index.js",
   "engines": {
     "node": ">=18",
