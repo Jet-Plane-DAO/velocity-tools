@@ -18,6 +18,13 @@
     "node": ">=16",
     "npm": ">=9.5"
   },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/velocity-tools.js",
+      "require": "./dist/velocity-tools.mjs"
+    }
+  },
   "scripts": {
     "build": "vite build",
     "start": "rollup -c -w",
