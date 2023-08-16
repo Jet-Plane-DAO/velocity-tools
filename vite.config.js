@@ -24,6 +24,11 @@ export default defineConfig({
         'prop-types',
         'react', 'react-dom',
       ],
+      output: {
+        globals: {
+          react: 'React',
+        },
+      },
       plugins: [typescript()],
     },
     target: ['esnext', 'node16'],
@@ -33,5 +38,5 @@ export default defineConfig({
       '@mesh': resolve(__dirname, './src'),
     },
   },
-  plugins: [eslint(), wasm()],
+  plugins: [eslint(), wasm(), react()],
 });
