@@ -8,6 +8,11 @@
     "type": "git",
     "url": "git+https://github.com/jetplane/velocity-tools.git"
   },
+  "module": "dist/velocity-tools.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "main": "dist/index.js",
   "engines": {
     "node": ">=16",
@@ -53,9 +58,6 @@
     "vite-plugin-wasm": "2.1.0",
     "vitest": "0.22.1"
   },
-  "files": [
-    "dist"
-  ],
   "keywords": [
     "react",
     "react hooks",
