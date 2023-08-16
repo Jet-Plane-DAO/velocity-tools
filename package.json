@@ -4,16 +4,17 @@
   "description": "Velocity tools",
   "author": "WolfRayet",
   "license": "Apache-2.0",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jetplane/velocity-tools.git"
   },
-  "module": "dist/velocity-tools.js",
-  "typings": "dist/index.d.ts",
   "files": [
     "dist"
   ],
-  "main": "dist/index.js",
+  "main": "dist/velocity-tools.cjs",
+  "module": "dist/react.js",
+  "typings": "dist/index.d.ts",
   "engines": {
     "node": ">=16",
     "npm": ">=9.5"
@@ -22,7 +23,13 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/velocity-tools.js",
-      "require": "./dist/velocity-tools.mjs"
+      "require": "./dist/velocity-tools.cjs"
+    }
+  },
+  "babelMacros": {
+    "twin": {
+      "config": "./tailwind.config.cjs",
+      "preset": "styled-components"
     }
   },
   "scripts": {
@@ -31,33 +38,22 @@
     "test": "jest",
     "publish-patch": "npm run build && npm version patch && npm publish"
   },
-  "jest": {
-    "transform": {
-      ".(ts|tsx)": "ts-jest"
-    },
-    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
-    "moduleFileExtensions": [
-      "ts",
-      "tsx",
-      "js"
-    ],
-    "modulePathIgnorePatterns": [
-      "<rootDir>/dist/"
-    ]
-  },
   "peerDependencies": {
-    "react": "17.x || 18.x",
+    "@meshsdk/core": "1.5.2",
     "react-dom": "17.x || 18.x",
-    "@meshsdk/core": "1.5.5"
-  },
-  "browser": {
-    "@emurgo/cardano-message-signing-nodejs": "@emurgo/cardano-message-signing-browser",
-    "@emurgo/cardano-serialization-lib-nodejs": "@emurgo/cardano-serialization-lib-browser"
+    "react": "17.x || 18.x"
   },
   "devDependencies": {
     "@babel/core": "7.19.6",
     "@rollup/plugin-babel": "6.0.2",
     "@rollup/plugin-typescript": "9.0.2",
+    "@storybook/addon-actions": "6.5.13",
+    "@storybook/addon-essentials": "6.5.13",
+    "@storybook/addon-interactions": "6.5.13",
+    "@storybook/addon-links": "6.5.13",
+    "@storybook/builder-vite": "0.2.5",
+    "@storybook/react": "6.5.13",
+    "@storybook/testing-library": "0.0.13",
     "@types/styled-components": "5.1.26",
     "@vitejs/plugin-react": "2.2.0",
     "autoprefixer": "10.4.12",
@@ -77,6 +73,7 @@
     "npm"
   ],
   "dependencies": {
+    "styled-components": "5.3.6",
     "prop-types": "^15.7.2"
   }
 }
