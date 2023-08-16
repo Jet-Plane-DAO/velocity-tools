@@ -1,17 +1,11 @@
 import { useCallback, useState } from 'react';
-
+import { Transaction, largestFirstMultiAsset } from '@meshsdk/core';
 import { LOVELACE_MULTIPLIER } from '../../helpers/ada';
 import PropTypes from 'prop-types';
 
 type IUseCraftingCampaign = {
   check: (wallet: any) => void;
-  craft: (
-    wallet: any,
-    planId: string,
-    input: any[],
-    concurrent: number,
-    largestFirstMultiAsset: any,
-  ) => void;
+  craft: (wallet: any, planId: string, input: any[], concurrent: number) => void;
   claim: (wallet: any, craftId: string) => void;
   quote: (planId: string, inputUnits: string[], concurrent?: number) => Promise<any>;
   campaignConfig: any;
@@ -63,7 +57,7 @@ export enum CraftingStatusEnum {
  *    }
  */
 
-export const useCraftingCampaign = (Transaction: any): IUseCraftingCampaign => {
+export const useCraftingCampaign = (): IUseCraftingCampaign => {
   const [craftingData, setCraftingData] = useState(null);
   const [status, setStatus] = useState<CraftingStatusEnum>(CraftingStatusEnum.INIT);
   const [campaignConfig, setConfigData] = useState<any | null>(null);
@@ -139,7 +133,6 @@ export const useCraftingCampaign = (Transaction: any): IUseCraftingCampaign => {
       planId: string,
       selectedInputs: any[],
       concurrent: number,
-      largestFirstMultiAsset: any,
     ) => {
       const plan = campaignConfig!.plans.find((p: any) => p.id === planId);
       if (!plan) throw new Error('Plan not found');
