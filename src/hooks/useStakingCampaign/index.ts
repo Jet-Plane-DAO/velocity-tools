@@ -1,8 +1,8 @@
 import { useCallback, useState } from 'react';
 
 import { LOVELACE_MULTIPLIER } from '../../helpers/ada';
-import PropTypes from 'prop-types';
-import { Transaction } from '@meshsdk/core';
+import { Transaction, largestFirst } from '@meshsdk/core';
+import { useWallet } from '@meshsdk/react';
 
 type IUseStakingCampaign = {
   check: (wallet: any) => void;
@@ -62,8 +62,9 @@ export const useStakingCampaign = (): IUseStakingCampaign => {
   const [stakingData, setStakingData] = useState(null);
   const [status, setStatus] = useState<StakingStatusEnum>(StakingStatusEnum.INIT);
   const [campaignConfig, setConfigData] = useState<any | null>(null);
+  const { wallet, connected } = useWallet();
 
-  const check = useCallback((wallet: any) => {
+  const check = useCallback(() => {
     if (status === StakingStatusEnum.INIT) {
       setStatus(StakingStatusEnum.CHECKING);
       wallet.getRewardAddresses().then((addresses: any) => {
@@ -91,49 +92,53 @@ export const useStakingCampaign = (): IUseStakingCampaign => {
         });
       });
     }
-  }, []);
+  }, [wallet]);
 
-  const register = useCallback(
-    async (wallet: any) => {
-      if (status !== StakingStatusEnum.UNSTAKED) return;
-      setStatus(StakingStatusEnum.REGISTERING);
+  const register = useCallback(async () => {
+    if (status !== StakingStatusEnum.UNSTAKED) return;
+    setStatus(StakingStatusEnum.REGISTERING);
 
-      const tx = new Transaction({ initiator: wallet }).sendLovelace(
-        campaignConfig!.walletAddress,
-        `${campaignConfig!.registrationFee}`,
-      );
-      const unsignedTx = await tx.build();
-      const signedTx = await wallet.signTx(unsignedTx);
-      await wallet.submitTx(signedTx);
-      setStatus(StakingStatusEnum.REGISTRATION_PENDING);
-      return;
-    },
-    [status, campaignConfig],
-  );
+    const utxos = await wallet.getUtxos();
 
-  const claim = useCallback(
-    async (wallet: any) => {
-      if (status !== StakingStatusEnum.STAKED) return;
-      setStatus(StakingStatusEnum.CLAIMING);
-      const tx = new Transaction({ initiator: wallet }).sendLovelace(
-        campaignConfig.walletAddress,
-        `${campaignConfig.claimFee * LOVELACE_MULTIPLIER}`,
-      );
-      const unsignedTx = await tx.build();
-      const signedTx = await wallet.signTx(unsignedTx);
-      await wallet.submitTx(signedTx);
+    const costLovelace = `${campaignConfig!.registrationFee}`;
+    const selectedUtxos = largestFirst(costLovelace, utxos, true);
 
-      setStatus(StakingStatusEnum.CLAIM_PENDING);
-      return;
-    },
-    [status, campaignConfig],
-  );
+    const tx = new Transaction({ initiator: wallet })
+      .setTxInputs(selectedUtxos)
+      .sendLovelace(campaignConfig!.walletAddress, costLovelace);
+    const unsignedTx = await tx.build();
+    const signedTx = await wallet.signTx(unsignedTx);
+    await wallet.submitTx(signedTx);
+    setStatus(StakingStatusEnum.REGISTRATION_PENDING);
+    return;
+  }, [wallet, status, campaignConfig]);
+
+  const claim = useCallback(async () => {
+    if (status !== StakingStatusEnum.STAKED) return;
+    if (!connected) {
+      throw new Error('Wallet not connected');
+    }
+
+    setStatus(StakingStatusEnum.CLAIMING);
+
+    const utxos = await wallet.getUtxos();
+    const costLovelace = `${campaignConfig.claimFee * LOVELACE_MULTIPLIER}`;
+    const selectedUtxos = largestFirst(costLovelace, utxos, true);
+
+    const tx = new Transaction({ initiator: wallet })
+      .setTxInputs(selectedUtxos)
+      .sendLovelace(campaignConfig.walletAddress, costLovelace);
+    const unsignedTx = await tx.build();
+    const signedTx = await wallet.signTx(unsignedTx);
+    await wallet.submitTx(signedTx);
+
+    setStatus(StakingStatusEnum.CLAIM_PENDING);
+    return;
+  }, [connected, wallet, status, campaignConfig]);
 
   return { check, register, claim, campaignConfig, status, stakingData };
 };
 
-useStakingCampaign.PropTypes = {
-  Transaction: PropTypes.object.isRequired,
-};
+useStakingCampaign.PropTypes = {};
 
 useStakingCampaign.defaultProps = {};

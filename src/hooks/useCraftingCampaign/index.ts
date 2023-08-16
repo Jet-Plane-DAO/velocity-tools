@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import { Transaction, largestFirstMultiAsset } from '@meshsdk/core';
 import { useWallet } from '@meshsdk/react';
 import { LOVELACE_MULTIPLIER } from '../../helpers/ada';
-import PropTypes from 'prop-types';
+import { useCampaignAssets } from '../useCampaignAssets';
 
 type IUseCraftingCampaign = {
   check: () => void;
@@ -11,6 +11,7 @@ type IUseCraftingCampaign = {
   quote: (planId: string, inputUnits: string[], concurrent?: number) => Promise<any>;
   campaignConfig: any;
   craftingData: any;
+  availableBP: any;
   status: CraftingStatusEnum;
 };
 
@@ -59,13 +60,16 @@ export enum CraftingStatusEnum {
  */
 
 export const useCraftingCampaign = (): IUseCraftingCampaign => {
-  const [craftingData, setCraftingData] = useState(null);
+  const { craftingData, setCraftingData, availableBP } = useCampaignAssets();
   const [status, setStatus] = useState<CraftingStatusEnum>(CraftingStatusEnum.INIT);
   const [campaignConfig, setConfigData] = useState<any | null>(null);
   const [quoteData, setQuoteData] = useState<any | null>(null);
-  const { wallet } = useWallet();
-  console.log(wallet);
+  const { wallet, connected } = useWallet();
+
   const check = useCallback(() => {
+    if (!connected) {
+      throw new Error('Wallet not connected');
+    }
     if (status === CraftingStatusEnum.INIT) {
       setStatus(CraftingStatusEnum.CHECKING);
       wallet.getRewardAddresses().then((addresses: any) => {
@@ -93,7 +97,7 @@ export const useCraftingCampaign = (): IUseCraftingCampaign => {
         });
       });
     }
-  }, [wallet]);
+  }, [connected, wallet]);
 
   const quote = async (
     planId: string,
@@ -105,6 +109,9 @@ export const useCraftingCampaign = (): IUseCraftingCampaign => {
       'jetplane-api-key',
       process.env.NEXT_PUBLIC_VELOCITY_API_KEY ?? '',
     );
+    if (availableBP) {
+      inputUnits.push(availableBP.unit);
+    }
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${process.env.NEXT_PUBLIC_VELOCITY_CRAFTING_CAMPAIGN_NAME}/quote`,
       {
@@ -131,6 +138,9 @@ export const useCraftingCampaign = (): IUseCraftingCampaign => {
 
   const craft = useCallback(
     async (planId: string, selectedInputs: any[], concurrent: number) => {
+      if (!connected) {
+        throw new Error('Wallet not connected');
+      }
       const plan = campaignConfig!.plans.find((p: any) => p.id === planId);
       if (!plan) throw new Error('Plan not found');
 
@@ -192,16 +202,25 @@ export const useCraftingCampaign = (): IUseCraftingCampaign => {
           ix += 1;
         }
       });
+      if (availableBP) {
+        tx.setMetadata(ix, availableBP.unit.slice(0, 56));
+        ix += 1;
+        tx.setMetadata(ix, availableBP.unit.slice(56));
+        ix += 1;
+      }
       const unsignedTx = await tx.build();
       const signedTx = await wallet.signTx(unsignedTx);
       const hash = await wallet.submitTx(signedTx);
       return hash;
     },
-    [wallet, status, campaignConfig],
+    [availableBP, connected, wallet, status, campaignConfig],
   );
 
   const claim = useCallback(
     async (craftId: string) => {
+      if (!connected) {
+        throw new Error('Wallet not connected');
+      }
       if (status !== CraftingStatusEnum.READY) return;
       setStatus(CraftingStatusEnum.CLAIMING);
       const tx = new Transaction({ initiator: wallet }).sendLovelace(
@@ -215,14 +234,21 @@ export const useCraftingCampaign = (): IUseCraftingCampaign => {
       setStatus(CraftingStatusEnum.CLAIM_PENDING);
       return craftId;
     },
-    [wallet, status, campaignConfig],
+    [connected, wallet, status, campaignConfig],
   );
 
-  return { check, craft, claim, campaignConfig, status, craftingData, quote };
+  return {
+    check,
+    craft,
+    claim,
+    campaignConfig,
+    status,
+    craftingData,
+    availableBP,
+    quote,
+  };
 };
 
-useCraftingCampaign.PropTypes = {
-  Transaction: PropTypes.object.isRequired,
-};
+useCraftingCampaign.PropTypes = {};
 
 useCraftingCampaign.defaultProps = {};
