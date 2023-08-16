@@ -1,8 +1,7 @@
 import { resolve } from 'path';
 import { defineConfig } from 'vite';
+import babel from '@rollup/plugin-babel';
 import typescript from '@rollup/plugin-typescript';
-import eslint from 'vite-plugin-eslint';
-import wasm from 'vite-plugin-wasm';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig({
@@ -13,16 +12,7 @@ export default defineConfig({
     },
     rollupOptions: {
       external: [
-        '@emurgo/cardano-message-signing-nodejs',
-        '@emurgo/cardano-serialization-lib-nodejs',
-        'axios',
-        'bip39',
-        'nanoid',
-        'zod',
-        'prettier',
-        '@mesh/core',
-        '@mesh/react',
-        'prop-types',
+        '@meshsdk/core',
         'react', 'react-dom',
       ],
       output: {
@@ -30,14 +20,24 @@ export default defineConfig({
           react: 'React',
         },
       },
-      plugins: [typescript()],
+      plugins: [
+        babel({
+          babelHelpers: 'bundled',
+          extensions: ['.ts', '.tsx'],
+        }),
+        typescript({
+          outputToFilesystem: false,
+        }),
+      ],
     },
-    target: ['esnext', 'node16'],
+    target: ['esnext'],
   },
   resolve: {
     alias: {
       '@mesh': resolve(__dirname, './src'),
     },
   },
-  plugins: [eslint(), wasm(), react()],
+  plugins: [
+    react(),
+  ],
 });

@@ -40,26 +40,28 @@
   },
   "peerDependencies": {
     "react": "17.x || 18.x",
-    "react-dom": "17.x || 18.x"
+    "react-dom": "17.x || 18.x",
+    "@meshsdk/core": "1.5.5"
   },
   "browser": {
     "@emurgo/cardano-message-signing-nodejs": "@emurgo/cardano-message-signing-browser",
     "@emurgo/cardano-serialization-lib-nodejs": "@emurgo/cardano-serialization-lib-browser"
   },
   "devDependencies": {
-    "@rollup/plugin-typescript": "8.4.0",
-    "@typescript-eslint/eslint-plugin": "5.36.1",
-    "@typescript-eslint/parser": "5.36.1",
-    "@types/react": "18.0.10",
-    "@types/react-dom": "18.0.5",
-    "husky": "8.0.1",
-    "rollup": "2.79.0",
-    "tslib": "2.4.0",
-    "vite": "3.1.4",
-    "vite-plugin-eslint": "1.8.1",
-    "vite-plugin-wasm": "2.1.0",
+    "@babel/core": "7.19.6",
+    "@rollup/plugin-babel": "6.0.2",
+    "@rollup/plugin-typescript": "9.0.2",
+    "@types/styled-components": "5.1.26",
     "@vitejs/plugin-react": "2.2.0",
-    "vitest": "0.22.1"
+    "autoprefixer": "10.4.12",
+    "babel-loader": "8.2.5",
+    "babel-plugin-macros": "3.1.0",
+    "babel-plugin-styled-components": "2.0.7",
+    "postcss": "8.4.18",
+    "rollup": "3.2.3",
+    "tailwindcss": "3.2.1",
+    "twin.macro": "3.0.0-rc.5",
+    "vite": "3.1.4"
   },
   "keywords": [
     "react",
@@ -68,17 +70,6 @@
     "npm"
   ],
   "dependencies": {
-    "@emurgo/cardano-message-signing-browser": "1.0.1",
-    "@emurgo/cardano-message-signing-nodejs": "1.0.1",
-    "@emurgo/cardano-serialization-lib-browser": "11.3.0",
-    "@emurgo/cardano-serialization-lib-nodejs": "11.3.0",
-    "@emurgo/cip14-js": "3.0.1",
-    "axios": "0.27.2",
-    "bip39": "3.0.4",
-    "nanoid": "3.3.4",
-    "prop-types": "^15.7.2",
-    "zod": "3.19.1",
-    "@meshsdk/core": "^1.5.2",
-    "@meshsdk/react": "^1.1.7"
+    "prop-types": "^15.7.2"
   }
 }
