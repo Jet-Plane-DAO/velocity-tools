@@ -16,8 +16,8 @@
   "module": "dist/react.js",
   "typings": "dist/index.d.ts",
   "engines": {
-    "node": ">=16",
-    "npm": ">=9.5"
+    "node": ">=16.x",
+    "npm": ">=8.x"
   },
   "exports": {
     ".": {
