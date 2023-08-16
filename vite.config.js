@@ -20,7 +20,9 @@ export default defineConfig({
         'zod',
         'prettier',
         '@mesh/core',
-        '@mesh/react'
+        '@mesh/react',
+        'prop-types',
+        'react', 'react-dom',
       ],
       plugins: [typescript()],
     },
