@@ -11,10 +11,7 @@ export default defineConfig({
       formats: ['cjs', 'es'],
     },
     rollupOptions: {
-      external: [
-        '@meshsdk/core',
-        'react', 'react-dom',
-      ],
+      external: ['@meshsdk/core', '@meshsdk/react', 'react', 'react-dom'],
       output: {
         globals: {
           react: 'React',
@@ -37,7 +34,5 @@ export default defineConfig({
       '@mesh': resolve(__dirname, './src'),
     },
   },
-  plugins: [
-    react(),
-  ],
+  plugins: [react()],
 });

@@ -1,12 +1,13 @@
 import { useCallback, useState } from 'react';
 import { Transaction, largestFirstMultiAsset } from '@meshsdk/core';
+import { useWallet } from '@meshsdk/react';
 import { LOVELACE_MULTIPLIER } from '../../helpers/ada';
 import PropTypes from 'prop-types';
 
 type IUseCraftingCampaign = {
-  check: (wallet: any) => void;
-  craft: (wallet: any, planId: string, input: any[], concurrent: number) => void;
-  claim: (wallet: any, craftId: string) => void;
+  check: () => void;
+  craft: (planId: string, input: any[], concurrent: number) => void;
+  claim: (craftId: string) => void;
   quote: (planId: string, inputUnits: string[], concurrent?: number) => Promise<any>;
   campaignConfig: any;
   craftingData: any;
@@ -62,8 +63,9 @@ export const useCraftingCampaign = (): IUseCraftingCampaign => {
   const [status, setStatus] = useState<CraftingStatusEnum>(CraftingStatusEnum.INIT);
   const [campaignConfig, setConfigData] = useState<any | null>(null);
   const [quoteData, setQuoteData] = useState<any | null>(null);
-
-  const check = useCallback((wallet: any) => {
+  const { wallet } = useWallet();
+  console.log(wallet);
+  const check = useCallback(() => {
     if (status === CraftingStatusEnum.INIT) {
       setStatus(CraftingStatusEnum.CHECKING);
       wallet.getRewardAddresses().then((addresses: any) => {
@@ -91,7 +93,7 @@ export const useCraftingCampaign = (): IUseCraftingCampaign => {
         });
       });
     }
-  }, []);
+  }, [wallet]);
 
   const quote = async (
     planId: string,
@@ -128,12 +130,7 @@ export const useCraftingCampaign = (): IUseCraftingCampaign => {
   };
 
   const craft = useCallback(
-    async (
-      wallet: any,
-      planId: string,
-      selectedInputs: any[],
-      concurrent: number,
-    ) => {
+    async (planId: string, selectedInputs: any[], concurrent: number) => {
       const plan = campaignConfig!.plans.find((p: any) => p.id === planId);
       if (!plan) throw new Error('Plan not found');
 
@@ -200,11 +197,11 @@ export const useCraftingCampaign = (): IUseCraftingCampaign => {
       const hash = await wallet.submitTx(signedTx);
       return hash;
     },
-    [status, campaignConfig],
+    [wallet, status, campaignConfig],
   );
 
   const claim = useCallback(
-    async (wallet: any, craftId: string) => {
+    async (craftId: string) => {
       if (status !== CraftingStatusEnum.READY) return;
       setStatus(CraftingStatusEnum.CLAIMING);
       const tx = new Transaction({ initiator: wallet }).sendLovelace(
@@ -218,7 +215,7 @@ export const useCraftingCampaign = (): IUseCraftingCampaign => {
       setStatus(CraftingStatusEnum.CLAIM_PENDING);
       return craftId;
     },
-    [status, campaignConfig],
+    [wallet, status, campaignConfig],
   );
 
   return { check, craft, claim, campaignConfig, status, craftingData, quote };
