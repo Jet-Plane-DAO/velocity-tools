@@ -14,7 +14,11 @@ type IUseCampaignAssets = {
 export const useCampaignAssets = (): IUseCampaignAssets => {
   const [availableBP, setAvailableBP] = useState<any | null>(null);
   const [boardingPasses, setBoardingPasses] = useState<any | null>(null);
-  const [craftingData, setCraftingData] = useState<any | null>(null);
+  const [craftingData, setCraftingData] = useState<any | null>({
+    crafts: [],
+    mints: [],
+    locked: [],
+  });
   const assets = useAssets();
 
   useEffect(() => {

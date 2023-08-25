@@ -85,7 +85,7 @@ export const useCraftingCampaign = (): IUseCraftingCampaign => {
         ).then(async (res) => {
           if (res.status === 200) {
             const data = await res.json();
-            setCraftingData(data.status);
+            setCraftingData(data?.status || { crafts: [], mints: [], locked: [] });
             setConfigData(data.config);
             setStatus(CraftingStatusEnum.READY);
           } else {
