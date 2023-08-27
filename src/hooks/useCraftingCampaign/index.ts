@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { Transaction, largestFirstMultiAsset } from '@meshsdk/core';
+import { Transaction, largestFirst, largestFirstMultiAsset } from '@meshsdk/core';
 import { useWallet } from '@meshsdk/react';
 import { LOVELACE_MULTIPLIER } from '../../helpers/ada';
 import { useCampaignAssets } from '../useCampaignAssets';
@@ -183,7 +183,13 @@ export const useCraftingCampaign = (): IUseCraftingCampaign => {
       }
 
       const tx = new Transaction({ initiator: wallet }).setTxInputs(
-        sendingToken ? largestFirstMultiAsset(assetMap, utxos, true) : utxos,
+        sendingToken
+          ? largestFirstMultiAsset(assetMap, utxos, true)
+          : largestFirst(
+              `${quoteResponse.quote.fee * LOVELACE_MULTIPLIER}`,
+              utxos,
+              true,
+            ),
       );
       if (sendingAda) {
         tx.sendLovelace(
@@ -237,11 +243,19 @@ export const useCraftingCampaign = (): IUseCraftingCampaign => {
       const craft = craftingData.crafts.find((c: any) => c.id === craftId);
       if (!craft) throw new Error('Craft not found');
 
-      const tx = new Transaction({ initiator: wallet }).sendLovelace(
-        campaignConfig.walletAddress,
-        `${craft.quote.fee * LOVELACE_MULTIPLIER}`,
-      );
-      tx.setMetadata(0, { t: 'claim', cid: craftId });
+      const utxos = await wallet.getUtxos();
+
+      const amountLovelace = `${craft.quote.fee * LOVELACE_MULTIPLIER}`;
+      console.log({
+        amountLovelace,
+        walletAddress: campaignConfig.walletAddress,
+        craft,
+        utxos,
+      });
+      const tx = new Transaction({ initiator: wallet })
+        .setTxInputs(largestFirst(amountLovelace, utxos, true))
+        .sendLovelace({ address: campaignConfig.walletAddress }, amountLovelace)
+        .setMetadata(0, { t: 'claim', cid: craftId });
 
       const unsignedTx = await tx.build();
       const signedTx = await wallet.signTx(unsignedTx);
