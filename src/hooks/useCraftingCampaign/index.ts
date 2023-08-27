@@ -8,7 +8,7 @@ type IUseCraftingCampaign = {
   check: () => void;
   craft: (planId: string, input: any[], concurrent: number) => void;
   claim: (craftId: string) => void;
-  quote: (planId: string, inputUnits: string[], concurrent?: number) => Promise<any>;
+  quote: (planId: string, inputUnits: string[], concurrent: number) => Promise<any>;
   campaignConfig: any;
   craftingData: any;
   availableBP: any;
@@ -26,32 +26,43 @@ export enum CraftingStatusEnum {
 }
 
 /**
- * Classic counter example to help understand the flow of this npm package
+ * Velocity Tools Crafting Campaign Hook
  *
  *
  * @return   {Object}
  *           object with config, data and methods
  *
- * @property {number} campaignConfig
- *           The current count state
+ * @property {Object} campaignConfig
+ *           The configuration and metadata for the campaign
  *
- * @property {()=>void} claim
- *           the increment function
- *
- * @property {()=>void} craft
- *           the decrement function
+ * @property {Object} craftingData
+ *           The current crafting data for selected wallet, inlcuding locked assets, crafts and mints.
  *
  * @property {()=>void} check
- *           the reset function
+ *           Check the status of the campaign and update the crafting data for the currently connected wallet
+ *
+ * @property {(planId: string, inputUnits: string[], concurrent: number)=>void} quote
+ *           Fetches a quote for a craft transaction, returns the quote data, this includes the quantity, fee, token price, time to craft and any effective modifiers that are being applied.
+ *
+ * @property {(planId: string, input: any[], concurrent: number)=>void} craft
+ *           Create a craft transaction to begin crafting an item, optionally if the plan has 0 time it will be claimed immediately, the claim fee must be included.
+ *
+ * @property {(craftId: string)=>void} claim
+ *           Create a claim transaction for an existing craft
  *
  * @example
  *   const ExampleComponent = () => {
- *     const { count, increment, reset, decrement } = useCounter();
+       const { check, craft, claim, campaignConfig, status, craftingData } = useCraftingCampaign();
  *
+       useEffect(() => {
+  *       check();
+  *    }, []);
+  *
  *     return (
  *       <>
- *         <button onClick={increment}>Increment counter</button>
- *         <button onClick={reset}>Reset counter</button>
+ *
+ *         <button onClick={() => craft('plan-1', []}>Craft items</button>
+ *         <button onClick={() => quote('plan-1, [])}>Reset counter</button>
  *         <button onClick={decrement}>Decrement counter</button>
  *         <p>{count}</p>
  *       </>
@@ -102,7 +113,7 @@ export const useCraftingCampaign = (): IUseCraftingCampaign => {
   const quote = async (
     planId: string,
     inputUnits: string[],
-    concurrent?: number,
+    concurrent: number = 1,
   ) => {
     const requestHeaders: HeadersInit = new Headers();
     requestHeaders.set(
@@ -121,7 +132,7 @@ export const useCraftingCampaign = (): IUseCraftingCampaign => {
           inputUnits,
           planId,
           type: 'craft',
-          concurrent: concurrent ?? 1,
+          concurrent,
         }),
       },
     );
@@ -137,7 +148,7 @@ export const useCraftingCampaign = (): IUseCraftingCampaign => {
   };
 
   const craft = useCallback(
-    async (planId: string, selectedInputs: any[], concurrent: number) => {
+    async (planId: string, selectedInputs: any[], concurrent: number = 1) => {
       if (!connected) {
         throw new Error('Wallet not connected');
       }
@@ -221,12 +232,17 @@ export const useCraftingCampaign = (): IUseCraftingCampaign => {
       if (!connected) {
         throw new Error('Wallet not connected');
       }
-      if (status !== CraftingStatusEnum.READY) return;
       setStatus(CraftingStatusEnum.CLAIMING);
+
+      const craft = craftingData.crafts.find((c: any) => c.id === craftId);
+      if (!craft) throw new Error('Craft not found');
+
       const tx = new Transaction({ initiator: wallet }).sendLovelace(
         campaignConfig.walletAddress,
-        `${campaignConfig.claimFee * LOVELACE_MULTIPLIER}`,
+        `${craft.quote.fee * LOVELACE_MULTIPLIER}`,
       );
+      tx.setMetadata(0, { t: 'claim', cid: craftId });
+
       const unsignedTx = await tx.build();
       const signedTx = await wallet.signTx(unsignedTx);
       await wallet.submitTx(signedTx);
