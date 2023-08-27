@@ -239,7 +239,7 @@ export const useCraftingCampaign = (): IUseCraftingCampaign => {
         throw new Error('Wallet not connected');
       }
       setStatus(CraftingStatusEnum.CLAIMING);
-
+      console.log(craftingData);
       const craft = craftingData.crafts.find((c: any) => c.id === craftId);
       if (!craft) throw new Error('Craft not found');
 
@@ -264,7 +264,7 @@ export const useCraftingCampaign = (): IUseCraftingCampaign => {
       setStatus(CraftingStatusEnum.CLAIM_PENDING);
       return craftId;
     },
-    [connected, wallet, status, campaignConfig],
+    [connected, wallet, status, campaignConfig, craftingData],
   );
 
   return {
