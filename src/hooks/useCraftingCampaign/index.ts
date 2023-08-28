@@ -239,19 +239,14 @@ export const useCraftingCampaign = (): IUseCraftingCampaign => {
         throw new Error('Wallet not connected');
       }
       setStatus(CraftingStatusEnum.CLAIMING);
-      console.log(craftingData);
+
       const craft = craftingData.crafts.find((c: any) => c.id === craftId);
       if (!craft) throw new Error('Craft not found');
 
       const utxos = await wallet.getUtxos();
 
       const amountLovelace = `${craft.quote.fee * LOVELACE_MULTIPLIER}`;
-      console.log({
-        amountLovelace,
-        walletAddress: campaignConfig.walletAddress,
-        craft,
-        utxos,
-      });
+
       const tx = new Transaction({ initiator: wallet })
         .setTxInputs(largestFirst(amountLovelace, utxos, true))
         .sendLovelace({ address: campaignConfig.walletAddress }, amountLovelace)
