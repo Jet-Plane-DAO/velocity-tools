@@ -182,8 +182,9 @@ export const useCraftingCampaign = (): IUseCraftingCampaign => {
         assetMap.set(campaignConfig.tokenAssetName, `${quoteResponse.quote.price}`);
       }
 
+      const multiAssets = largestFirstMultiAsset(assetMap, utxos, true);
       const tx = new Transaction({ initiator: wallet }).setTxInputs(
-        largestFirstMultiAsset(assetMap, utxos, true),
+        multiAssets.length ? multiAssets : utxos,
       );
 
       if (sendingAda) {
@@ -238,15 +239,9 @@ export const useCraftingCampaign = (): IUseCraftingCampaign => {
       const craft = craftingData.crafts.find((c: any) => c.id === craftId);
       if (!craft) throw new Error('Craft not found');
 
-      const utxos = await wallet.getUtxos();
-
       const amountLovelace = `${craft.quote.fee * LOVELACE_MULTIPLIER}`;
 
-      const assetMap = new Map();
-      assetMap.set('lovelace', amountLovelace);
-
       const tx = new Transaction({ initiator: wallet })
-        .setTxInputs(largestFirstMultiAsset(assetMap, utxos, true))
         .sendLovelace({ address: campaignConfig.walletAddress }, amountLovelace)
         .setMetadata(0, { t: 'claim', cid: craftId });
 
