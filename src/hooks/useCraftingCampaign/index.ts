@@ -182,23 +182,10 @@ export const useCraftingCampaign = (): IUseCraftingCampaign => {
         assetMap.set(campaignConfig.tokenAssetName, `${quoteResponse.quote.price}`);
       }
 
-      console.log(
-        largestFirst(
-          `${quoteResponse.quote.fee * LOVELACE_MULTIPLIER}`,
-          utxos,
-          true,
-        ),
+      const tx = new Transaction({ initiator: wallet }).setTxInputs(
+        largestFirstMultiAsset(assetMap, utxos, true),
       );
 
-      const tx = new Transaction({ initiator: wallet }).setTxInputs(
-        sendingToken
-          ? largestFirstMultiAsset(assetMap, utxos, true)
-          : largestFirst(
-              `${quoteResponse.quote.fee * LOVELACE_MULTIPLIER}`,
-              utxos,
-              true,
-            ),
-      );
       if (sendingAda) {
         tx.sendLovelace(
           { address: campaignConfig.walletAddress },
@@ -254,11 +241,12 @@ export const useCraftingCampaign = (): IUseCraftingCampaign => {
       const utxos = await wallet.getUtxos();
 
       const amountLovelace = `${craft.quote.fee * LOVELACE_MULTIPLIER}`;
-      console.log(amountLovelace);
-      console.log(utxos);
-      console.log(largestFirst(amountLovelace, utxos, true));
+
+      const assetMap = new Map();
+      assetMap.set('lovelace', amountLovelace);
+
       const tx = new Transaction({ initiator: wallet })
-        .setTxInputs(largestFirst(amountLovelace, utxos, true))
+        .setTxInputs(largestFirstMultiAsset(assetMap, utxos, true))
         .sendLovelace({ address: campaignConfig.walletAddress }, amountLovelace)
         .setMetadata(0, { t: 'claim', cid: craftId });
 
