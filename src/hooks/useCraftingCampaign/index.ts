@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { Transaction, largestFirst, largestFirstMultiAsset } from '@meshsdk/core';
+import { Transaction, keepRelevant } from '@meshsdk/core';
 import { useWallet } from '@meshsdk/react';
 import { LOVELACE_MULTIPLIER } from '../../helpers/ada';
 import { useCampaignAssets } from '../useCampaignAssets';
@@ -177,16 +177,19 @@ export const useCraftingCampaign = (): IUseCraftingCampaign => {
       const assetMap = new Map();
       if (sendingAda) {
         assetMap.set('lovelace', `${quoteResponse.quote.fee * LOVELACE_MULTIPLIER}`);
-      } else {
-        assetMap.set('lovelace', `${1.5 * LOVELACE_MULTIPLIER}`);
       }
       if (sendingToken) {
         assetMap.set(campaignConfig.tokenAssetName, `${quoteResponse.quote.price}`);
       }
 
-      const multiAssets = largestFirstMultiAsset(assetMap, utxos, true);
+      const relevant = keepRelevant(
+        assetMap,
+        utxos,
+        sendingAda ? `${quoteResponse.quote.fee * LOVELACE_MULTIPLIER}` : '5000000',
+      );
+
       const tx = new Transaction({ initiator: wallet }).setTxInputs(
-        multiAssets.length ? multiAssets : utxos,
+        relevant.length ? relevant : utxos,
       );
 
       if (sendingAda) {
@@ -243,7 +246,16 @@ export const useCraftingCampaign = (): IUseCraftingCampaign => {
 
       const amountLovelace = `${craft.quote.fee * LOVELACE_MULTIPLIER}`;
 
+      const utxos = await wallet.getUtxos();
+
+      const assetMap = new Map();
+
+      assetMap.set('lovelace', `${amountLovelace}`);
+
+      const relevant = keepRelevant(assetMap, utxos, amountLovelace);
+
       const tx = new Transaction({ initiator: wallet })
+        .setTxInputs(relevant.length ? relevant : utxos)
         .sendLovelace({ address: campaignConfig.walletAddress }, amountLovelace)
         .setMetadata(0, { t: 'claim', cid: craftId });
 
