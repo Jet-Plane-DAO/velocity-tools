@@ -9,6 +9,7 @@ type IUseCraftingCampaign = {
   craft: (planId: string, input: any[], concurrent: number) => void;
   claim: (craftId: string) => void;
   quote: (planId: string, inputUnits: string[], concurrent: number) => Promise<any>;
+  recycle: (recycleUnits: string[]) => Promise<any>;
   campaignConfig: any;
   craftingData: any;
   availableBP: any;
@@ -22,7 +23,9 @@ export enum CraftingStatusEnum {
   CRAFTING = 'CRAFTING',
   CRAFTING_PENDING = 'CRAFTING_PENDING',
   CLAIMING = 'CLAIMING',
+  RECYCLING = 'RECYCLING',
   CLAIM_PENDING = 'CLAIM_PENDING',
+  RECYCLE_PENDING = 'RECYCLE_PENDING',
 }
 
 /**
@@ -269,10 +272,50 @@ export const useCraftingCampaign = (): IUseCraftingCampaign => {
     [connected, wallet, status, campaignConfig, craftingData],
   );
 
+  const recycle = useCallback(
+    async (recycleUnits: string[]) => {
+      if (!connected) {
+        throw new Error('Wallet not connected');
+      }
+      setStatus(CraftingStatusEnum.RECYCLING);
+
+      const amountLovelace = `${3 * recycleUnits.length * LOVELACE_MULTIPLIER}`;
+
+      const utxos = await wallet.getUtxos();
+
+      const assetMap = new Map();
+
+      assetMap.set('lovelace', `${amountLovelace}`);
+      for (const unit of recycleUnits) {
+        assetMap.set(unit, `1`);
+      }
+
+      const relevant = keepRelevant(assetMap, utxos, amountLovelace);
+
+      const tx = new Transaction({ initiator: wallet })
+        .setTxInputs(relevant.length ? relevant : utxos)
+        .sendLovelace({ address: campaignConfig.walletAddress }, amountLovelace)
+        .sendAssets(
+          { address: campaignConfig.walletAddress },
+          recycleUnits.map((unit) => ({ unit, quantity: '1' })),
+        )
+        .setMetadata(0, { t: 'recycle' });
+
+      const unsignedTx = await tx.build();
+      const signedTx = await wallet.signTx(unsignedTx);
+      const hash = await wallet.submitTx(signedTx);
+
+      setStatus(CraftingStatusEnum.RECYCLE_PENDING);
+      return hash;
+    },
+    [connected, wallet, status, campaignConfig, craftingData],
+  );
+
   return {
     check,
     craft,
     claim,
+    recycle,
     campaignConfig,
     status,
     craftingData,
