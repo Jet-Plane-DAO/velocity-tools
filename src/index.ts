@@ -3,3 +3,7 @@ export {
   useCraftingCampaign,
   CraftingStatusEnum,
 } from './hooks/useCraftingCampaign/';
+export {
+  useRecyclerCampaign,
+  RecyclerStatusEnum,
+} from './hooks/useRecyclerCampaign/';
