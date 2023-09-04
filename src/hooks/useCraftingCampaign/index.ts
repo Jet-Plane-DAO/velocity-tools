@@ -9,7 +9,6 @@ type IUseCraftingCampaign = {
   craft: (planId: string, input: any[], concurrent: number) => void;
   claim: (craftId: string) => void;
   quote: (planId: string, inputUnits: string[], concurrent: number) => Promise<any>;
-  recycle: (recycleUnits: string[]) => Promise<any>;
   upgrade: (upgradeUnits: string[]) => Promise<any>;
   campaignConfig: any;
   craftingData: any;
@@ -25,8 +24,6 @@ export enum CraftingStatusEnum {
   CRAFTING_PENDING = 'CRAFTING_PENDING',
   CLAIMING = 'CLAIMING',
   CLAIM_PENDING = 'CLAIM_PENDING',
-  RECYCLING = 'RECYCLING',
-  RECYCLE_PENDING = 'RECYCLE_PENDING',
   UPGRADING = 'UPGRADING',
   UPGRADE_PENDING = 'UPGRADE_PENDING',
 }
@@ -251,9 +248,7 @@ export const useCraftingCampaign = (): IUseCraftingCampaign => {
       if (!craft) throw new Error('Craft not found');
 
       const amountLovelace = `${craft.quote.fee * LOVELACE_MULTIPLIER}`;
-
       const utxos = await wallet.getUtxos();
-
       const assetMap = new Map();
 
       assetMap.set('lovelace', `${amountLovelace}`);
@@ -275,45 +270,6 @@ export const useCraftingCampaign = (): IUseCraftingCampaign => {
     [connected, wallet, status, campaignConfig, craftingData],
   );
 
-  const recycle = useCallback(
-    async (recycleUnits: string[]) => {
-      if (!connected) {
-        throw new Error('Wallet not connected');
-      }
-      setStatus(CraftingStatusEnum.RECYCLING);
-
-      const amountLovelace = `${3 * recycleUnits.length * LOVELACE_MULTIPLIER}`;
-
-      const utxos = await wallet.getUtxos();
-
-      const assetMap = new Map();
-
-      assetMap.set('lovelace', `${amountLovelace}`);
-      for (const unit of recycleUnits) {
-        assetMap.set(unit, `1`);
-      }
-
-      const relevant = keepRelevant(assetMap, utxos, amountLovelace);
-
-      const tx = new Transaction({ initiator: wallet })
-        .setTxInputs(relevant.length ? relevant : utxos)
-        .sendLovelace({ address: campaignConfig.walletAddress }, amountLovelace)
-        .sendAssets(
-          { address: campaignConfig.walletAddress },
-          recycleUnits.map((unit) => ({ unit, quantity: '1' })),
-        )
-        .setMetadata(0, { t: 'recycle' });
-
-      const unsignedTx = await tx.build();
-      const signedTx = await wallet.signTx(unsignedTx);
-      const hash = await wallet.submitTx(signedTx);
-
-      setStatus(CraftingStatusEnum.RECYCLE_PENDING);
-      return hash;
-    },
-    [connected, wallet, status, campaignConfig, craftingData],
-  );
-
   const upgrade = useCallback(
     async (upgradeUnits: string[]) => {
       if (!connected) {
@@ -322,9 +278,7 @@ export const useCraftingCampaign = (): IUseCraftingCampaign => {
       setStatus(CraftingStatusEnum.UPGRADING);
 
       const amountLovelace = `${10 * LOVELACE_MULTIPLIER}`;
-
       const utxos = await wallet.getUtxos();
-
       const assetMap = new Map();
 
       assetMap.set('lovelace', `${amountLovelace}`);
@@ -347,7 +301,7 @@ export const useCraftingCampaign = (): IUseCraftingCampaign => {
       const signedTx = await wallet.signTx(unsignedTx);
       const hash = await wallet.submitTx(signedTx);
 
-      setStatus(CraftingStatusEnum.RECYCLE_PENDING);
+      setStatus(CraftingStatusEnum.UPGRADE_PENDING);
       return hash;
     },
     [connected, wallet, status, campaignConfig, craftingData],
@@ -357,7 +311,6 @@ export const useCraftingCampaign = (): IUseCraftingCampaign => {
     check,
     craft,
     claim,
-    recycle,
     upgrade,
     campaignConfig,
     status,
