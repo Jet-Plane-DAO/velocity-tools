@@ -10,6 +10,7 @@ type IUseCraftingCampaign = {
   claim: (craftId: string) => void;
   quote: (planId: string, inputUnits: string[], concurrent: number) => Promise<any>;
   recycle: (recycleUnits: string[]) => Promise<any>;
+  upgrade: (upgradeUnits: string[]) => Promise<any>;
   campaignConfig: any;
   craftingData: any;
   availableBP: any;
@@ -23,9 +24,11 @@ export enum CraftingStatusEnum {
   CRAFTING = 'CRAFTING',
   CRAFTING_PENDING = 'CRAFTING_PENDING',
   CLAIMING = 'CLAIMING',
-  RECYCLING = 'RECYCLING',
   CLAIM_PENDING = 'CLAIM_PENDING',
+  RECYCLING = 'RECYCLING',
   RECYCLE_PENDING = 'RECYCLE_PENDING',
+  UPGRADING = 'UPGRADING',
+  UPGRADE_PENDING = 'UPGRADE_PENDING',
 }
 
 /**
@@ -311,11 +314,51 @@ export const useCraftingCampaign = (): IUseCraftingCampaign => {
     [connected, wallet, status, campaignConfig, craftingData],
   );
 
+  const upgrade = useCallback(
+    async (upgradeUnits: string[]) => {
+      if (!connected) {
+        throw new Error('Wallet not connected');
+      }
+      setStatus(CraftingStatusEnum.UPGRADING);
+
+      const amountLovelace = `${10 * LOVELACE_MULTIPLIER}`;
+
+      const utxos = await wallet.getUtxos();
+
+      const assetMap = new Map();
+
+      assetMap.set('lovelace', `${amountLovelace}`);
+      for (const unit of upgradeUnits) {
+        assetMap.set(unit, `1`);
+      }
+
+      const relevant = keepRelevant(assetMap, utxos, amountLovelace);
+
+      const tx = new Transaction({ initiator: wallet })
+        .setTxInputs(relevant.length ? relevant : utxos)
+        .sendLovelace({ address: campaignConfig.walletAddress }, amountLovelace)
+        .sendAssets(
+          { address: campaignConfig.walletAddress },
+          upgradeUnits.map((unit) => ({ unit, quantity: '1' })),
+        )
+        .setMetadata(0, { t: 'upgrade' });
+
+      const unsignedTx = await tx.build();
+      const signedTx = await wallet.signTx(unsignedTx);
+      const hash = await wallet.submitTx(signedTx);
+
+      setStatus(CraftingStatusEnum.RECYCLE_PENDING);
+      return hash;
+    },
+    [connected, wallet, status, campaignConfig, craftingData],
+  );
+
   return {
     check,
     craft,
     claim,
     recycle,
+    upgrade,
     campaignConfig,
     status,
     craftingData,
