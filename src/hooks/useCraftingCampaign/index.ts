@@ -180,7 +180,10 @@ export const useCraftingCampaign = (): IUseCraftingCampaign => {
       const assetMap = new Map();
       if (sendingAda) {
         assetMap.set('lovelace', `${quoteResponse.quote.fee * LOVELACE_MULTIPLIER}`);
+      } else {
+        assetMap.set('lovelace', `${5 * LOVELACE_MULTIPLIER}`);
       }
+
       if (sendingToken) {
         assetMap.set(campaignConfig.tokenAssetName, `${quoteResponse.quote.price}`);
       }
