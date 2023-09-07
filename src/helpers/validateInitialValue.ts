@@ -18,9 +18,6 @@ export const validateInitialValue = (initialValue: any) => {
   }
 
   if (isNaN(initialValue)) {
-    console.log(
-      'you really want to break the validation. Please pass a number as parameter. Defaulting to zero.',
-    );
     initialValue = 0;
   }
   return initialValue;
