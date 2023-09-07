@@ -179,9 +179,9 @@ export const useCraftingCampaign = (): IUseCraftingCampaign => {
 
       const assetMap = new Map();
       // if (sendingAda) {
-      //   assetMap.set('lovelace', `${quoteResponse.quote.fee * LOVELACE_MULTIPLIER}`);
+      assetMap.set('lovelace', `${quoteResponse.quote.fee * LOVELACE_MULTIPLIER}`);
       // } else {
-      assetMap.set('lovelace', `${10 * LOVELACE_MULTIPLIER}`);
+      // assetMap.set('lovelace', `${10 * LOVELACE_MULTIPLIER}`);
       // }
 
       if (sendingToken) {
