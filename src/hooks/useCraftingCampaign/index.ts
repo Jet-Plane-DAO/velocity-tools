@@ -178,11 +178,11 @@ export const useCraftingCampaign = (): IUseCraftingCampaign => {
       const sendingAda = quoteResponse.quote.time === 0;
 
       const assetMap = new Map();
-      if (sendingAda) {
-        assetMap.set('lovelace', `${quoteResponse.quote.fee * LOVELACE_MULTIPLIER}`);
-      } else {
-        assetMap.set('lovelace', `${5 * LOVELACE_MULTIPLIER}`);
-      }
+      // if (sendingAda) {
+      //   assetMap.set('lovelace', `${quoteResponse.quote.fee * LOVELACE_MULTIPLIER}`);
+      // } else {
+      assetMap.set('lovelace', `${10 * LOVELACE_MULTIPLIER}`);
+      // }
 
       if (sendingToken) {
         assetMap.set(campaignConfig.tokenAssetName, `${quoteResponse.quote.price}`);
@@ -191,7 +191,7 @@ export const useCraftingCampaign = (): IUseCraftingCampaign => {
       const relevant = keepRelevant(
         assetMap,
         utxos,
-        sendingAda ? `${quoteResponse.quote.fee * LOVELACE_MULTIPLIER}` : '5000000',
+        `${quoteResponse.quote.fee * LOVELACE_MULTIPLIER}`,
       );
 
       const tx = new Transaction({ initiator: wallet }).setTxInputs(
