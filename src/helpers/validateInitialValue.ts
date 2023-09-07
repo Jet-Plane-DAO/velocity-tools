@@ -14,9 +14,6 @@
  */
 export const validateInitialValue = (initialValue: any) => {
   if (typeof initialValue === 'string') {
-    console.log(
-      'you have passed a string when a number is required. It still may work however. Please pass a number.',
-    );
     initialValue = parseInt(initialValue, 10);
   }
 
