@@ -14,16 +14,10 @@
  */
 export const validateInitialValue = (initialValue: any) => {
   if (typeof initialValue === 'string') {
-    console.log(
-      'you have passed a string when a number is required. It still may work however. Please pass a number.',
-    );
     initialValue = parseInt(initialValue, 10);
   }
 
   if (isNaN(initialValue)) {
-    console.log(
-      'you really want to break the validation. Please pass a number as parameter. Defaulting to zero.',
-    );
     initialValue = 0;
   }
   return initialValue;
