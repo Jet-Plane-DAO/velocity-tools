@@ -183,14 +183,14 @@ export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign 
       const sendingAda = quoteResponse.quote.time === 0;
 
       const assetMap = new Map();
-      // if (sendingAda) {
-      assetMap.set(
-        'lovelace',
-        `${quoteResponse.quote.fee * LOVELACE_MULTIPLIER + 2 * LOVELACE_MULTIPLIER}`,
-      );
-      // } else {
-      // assetMap.set('lovelace', `${10 * LOVELACE_MULTIPLIER}`);
-      // }
+      if (sendingAda) {
+        assetMap.set(
+          'lovelace',
+          `${quoteResponse.quote.fee * LOVELACE_MULTIPLIER + 200000}`,
+        );
+      } else {
+        assetMap.set('lovelace', `${5 * LOVELACE_MULTIPLIER}`);
+      }
 
       if (sendingToken) {
         assetMap.set(campaignConfig.tokenAssetName, `${quoteResponse.quote.price}`);
@@ -199,7 +199,9 @@ export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign 
       const relevant = keepRelevant(
         assetMap,
         utxos,
-        `${quoteResponse.quote.fee * LOVELACE_MULTIPLIER + 2 * LOVELACE_MULTIPLIER}`,
+        sendingAda
+          ? `${quoteResponse.quote.fee * LOVELACE_MULTIPLIER + 200000}`
+          : '5000000',
       );
 
       const tx = new Transaction({ initiator: wallet }).setTxInputs(
