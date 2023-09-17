@@ -5,19 +5,17 @@ import { LOVELACE_MULTIPLIER } from '../../helpers/ada';
 import { useCampaignAssets } from '../useCampaignAssets';
 import PropTypes from 'prop-types';
 
-type IUseCraftingCampaign = {
+type IUseMintCampaign = {
   check: () => void;
-  craft: (planId: string, input: any[], concurrent: number) => void;
-  claim: (craftId: string) => void;
+  mint: (planId: string, input: any[], concurrent: number) => void;
   quote: (planId: string, inputUnits: string[], concurrent: number) => Promise<any>;
-  upgrade: (upgradeUnits: string[]) => Promise<any>;
   campaignConfig: any;
   craftingData: any;
   availableBP: any;
-  status: CraftingStatusEnum;
+  status: MintStatusEnum;
 };
 
-export enum CraftingStatusEnum {
+export enum MintStatusEnum {
   INIT = 'INIT',
   CHECKING = 'CHECKING',
   READY = 'READY',
@@ -74,9 +72,9 @@ export enum CraftingStatusEnum {
  *    }
  */
 
-export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign => {
+export const useMintCampaign = (campaignKey?: string): IUseMintCampaign => {
   const { craftingData, setCraftingData, availableBP } = useCampaignAssets();
-  const [status, setStatus] = useState<CraftingStatusEnum>(CraftingStatusEnum.INIT);
+  const [status, setStatus] = useState<MintStatusEnum>(MintStatusEnum.INIT);
   const [campaignConfig, setConfigData] = useState<any | null>(null);
   const [quoteData, setQuoteData] = useState<any | null>(null);
   const { wallet, connected } = useWallet();
@@ -85,8 +83,8 @@ export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign 
     if (!connected) {
       throw new Error('Wallet not connected');
     }
-    if (status === CraftingStatusEnum.INIT) {
-      setStatus(CraftingStatusEnum.CHECKING);
+    if (status === MintStatusEnum.INIT) {
+      setStatus(MintStatusEnum.CHECKING);
       wallet.getRewardAddresses().then((addresses: any) => {
         const stakeKey = addresses[0];
         const requestHeaders: HeadersInit = new Headers();
@@ -104,11 +102,11 @@ export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign 
             const data = await res.json();
             setCraftingData(data?.status || { crafts: [], mints: [], locked: [] });
             setConfigData(data.config);
-            setStatus(CraftingStatusEnum.READY);
+            setStatus(MintStatusEnum.READY);
           } else {
             const data = await res.json();
             setConfigData(data.config);
-            setStatus(CraftingStatusEnum.READY);
+            setStatus(MintStatusEnum.READY);
           }
           return;
         });
@@ -155,7 +153,7 @@ export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign 
     return quoteData ? { status: 'OK', quote: quoteData } : null;
   };
 
-  const craft = useCallback(
+  const mint = useCallback(
     async (planId: string, selectedInputs: any[], concurrent: number = 1) => {
       if (!connected) {
         throw new Error('Wallet not connected');
@@ -183,14 +181,10 @@ export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign 
       const sendingAda = quoteResponse.quote.time === 0;
 
       const assetMap = new Map();
-      // if (sendingAda) {
       assetMap.set(
         'lovelace',
         `${quoteResponse.quote.fee * LOVELACE_MULTIPLIER + 2 * LOVELACE_MULTIPLIER}`,
       );
-      // } else {
-      // assetMap.set('lovelace', `${10 * LOVELACE_MULTIPLIER}`);
-      // }
 
       if (sendingToken) {
         assetMap.set(campaignConfig.tokenAssetName, `${quoteResponse.quote.price}`);
@@ -221,7 +215,7 @@ export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign 
         ]);
       }
 
-      tx.setMetadata(0, { t: 'craft', p: planId, c: concurrent });
+      tx.setMetadata(0, { t: 'mint', p: planId, c: concurrent });
       let ix = 1;
       selectedInputs.forEach((i) => {
         if (i.unit.length > 64) {
@@ -248,81 +242,9 @@ export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign 
     [availableBP, connected, wallet, status, campaignConfig],
   );
 
-  const claim = useCallback(
-    async (craftId: string) => {
-      if (!connected) {
-        throw new Error('Wallet not connected');
-      }
-      setStatus(CraftingStatusEnum.CLAIMING);
-
-      const craft = craftingData.crafts.find((c: any) => c.id === craftId);
-      if (!craft) throw new Error('Craft not found');
-
-      const amountLovelace = `${craft.quote.fee * LOVELACE_MULTIPLIER}`;
-      const utxos = await wallet.getUtxos();
-      const assetMap = new Map();
-
-      assetMap.set('lovelace', `${amountLovelace}`);
-
-      const relevant = keepRelevant(assetMap, utxos, amountLovelace);
-
-      const tx = new Transaction({ initiator: wallet })
-        .setTxInputs(relevant.length ? relevant : utxos)
-        .sendLovelace({ address: campaignConfig.walletAddress }, amountLovelace)
-        .setMetadata(0, { t: 'claim', cid: craftId });
-
-      const unsignedTx = await tx.build();
-      const signedTx = await wallet.signTx(unsignedTx);
-      await wallet.submitTx(signedTx);
-
-      setStatus(CraftingStatusEnum.CLAIM_PENDING);
-      return craftId;
-    },
-    [connected, wallet, status, campaignConfig, craftingData],
-  );
-
-  const upgrade = useCallback(
-    async (upgradeUnits: string[]) => {
-      if (!connected) {
-        throw new Error('Wallet not connected');
-      }
-      setStatus(CraftingStatusEnum.UPGRADING);
-
-      const amountLovelace = `${10 * LOVELACE_MULTIPLIER}`;
-      const utxos = await wallet.getUtxos();
-      const assetMap = new Map();
-
-      assetMap.set('lovelace', `${amountLovelace}`);
-      for (const unit of upgradeUnits) {
-        assetMap.set(unit, `1`);
-      }
-
-      const relevant = keepRelevant(assetMap, utxos, amountLovelace);
-
-      const tx = new Transaction({ initiator: wallet })
-        .setTxInputs(relevant.length ? relevant : utxos)
-        .sendLovelace({ address: campaignConfig.walletAddress }, amountLovelace)
-        .sendAssets(
-          { address: campaignConfig.walletAddress },
-          upgradeUnits.map((unit) => ({ unit, quantity: '1' })),
-        )
-        .setMetadata(0, { t: 'upgrade' });
-
-      const unsignedTx = await tx.build();
-      const signedTx = await wallet.signTx(unsignedTx);
-      const hash = await wallet.submitTx(signedTx);
-
-      setStatus(CraftingStatusEnum.UPGRADE_PENDING);
-      return hash;
-    },
-    [connected, wallet, status, campaignConfig, craftingData],
-  );
-
   return {
     check,
-    craft,
-    claim,
-    upgrade,
+    mint,
     campaignConfig,
     status,
     craftingData,
@@ -331,8 +253,8 @@ export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign 
   };
 };
 
-useCraftingCampaign.PropTypes = {
+useMintCampaign.PropTypes = {
   campaignKey: PropTypes.string,
 };
 
-useCraftingCampaign.defaultProps = {};
+useMintCampaign.defaultProps = {};
