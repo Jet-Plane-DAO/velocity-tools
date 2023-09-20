@@ -94,7 +94,7 @@ export const useMintCampaign = (campaignKey?: string): IUseMintCampaign => {
         );
         fetch(
           `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${
-            campaignKey || process.env.NEXT_PUBLIC_VELOCITY_CRAFTING_CAMPAIGN_NAME
+            campaignKey || process.env.NEXT_PUBLIC_VELOCITY_MINTING_CAMPAIGN_NAME
           }/check/${stakeKey}`,
           { headers: requestHeaders },
         ).then(async (res) => {
@@ -129,7 +129,7 @@ export const useMintCampaign = (campaignKey?: string): IUseMintCampaign => {
     }
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${
-        campaignKey || process.env.NEXT_PUBLIC_VELOCITY_CRAFTING_CAMPAIGN_NAME
+        campaignKey || process.env.NEXT_PUBLIC_VELOCITY_MINTING_CAMPAIGN_NAME
       }/quote`,
       {
         headers: requestHeaders,
