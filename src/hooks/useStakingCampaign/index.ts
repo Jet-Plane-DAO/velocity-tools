@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 
 import { LOVELACE_MULTIPLIER } from '../../helpers/ada';
-import { Transaction, largestFirst } from '@meshsdk/core';
+import { Transaction, keepRelevant, largestFirst } from '@meshsdk/core';
 import { useWallet } from '@meshsdk/react';
 
 type IUseStakingCampaign = {
@@ -101,10 +101,16 @@ export const useStakingCampaign = (): IUseStakingCampaign => {
     const utxos = await wallet.getUtxos();
 
     const costLovelace = `${campaignConfig!.registrationFee * LOVELACE_MULTIPLIER}`;
-    const selectedUtxos = largestFirst(costLovelace, utxos, true);
+    // const selectedUtxos = largestFirst(costLovelace, utxos, true);
+
+    const assetMap = new Map();
+
+    assetMap.set('lovelace', costLovelace);
+
+    const relevant = keepRelevant(assetMap, utxos, costLovelace);
 
     const tx = new Transaction({ initiator: wallet })
-      .setTxInputs(selectedUtxos)
+      .setTxInputs(relevant)
       .sendLovelace(campaignConfig!.walletAddress, costLovelace);
 
     const unsignedTx = await tx.build();
@@ -126,10 +132,14 @@ export const useStakingCampaign = (): IUseStakingCampaign => {
 
     const utxos = await wallet.getUtxos();
     const costLovelace = `${campaignConfig.claimFee * LOVELACE_MULTIPLIER}`;
-    const selectedUtxos = largestFirst(costLovelace, utxos, true);
+    const assetMap = new Map();
+
+    assetMap.set('lovelace', costLovelace);
+
+    const relevant = keepRelevant(assetMap, utxos, costLovelace);
 
     const tx = new Transaction({ initiator: wallet })
-      .setTxInputs(selectedUtxos)
+      .setTxInputs(relevant)
       .sendLovelace(campaignConfig.walletAddress, costLovelace);
     const unsignedTx = await tx.build();
     const signedTx = await wallet.signTx(unsignedTx);
