@@ -100,15 +100,18 @@ export const useStakingCampaign = (): IUseStakingCampaign => {
 
     const utxos = await wallet.getUtxos();
 
-    const costLovelace = `${campaignConfig!.registrationFee}`;
+    const costLovelace = `${campaignConfig!.registrationFee * LOVELACE_MULTIPLIER}`;
     const selectedUtxos = largestFirst(costLovelace, utxos, true);
 
     const tx = new Transaction({ initiator: wallet })
       .setTxInputs(selectedUtxos)
       .sendLovelace(campaignConfig!.walletAddress, costLovelace);
+
     const unsignedTx = await tx.build();
     const signedTx = await wallet.signTx(unsignedTx);
+
     await wallet.submitTx(signedTx);
+
     setStatus(StakingStatusEnum.REGISTRATION_PENDING);
     return;
   }, [wallet, status, campaignConfig]);
