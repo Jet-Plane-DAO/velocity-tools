@@ -8,3 +8,4 @@ export {
   RecyclerStatusEnum,
 } from './hooks/useRecyclerCampaign/';
 export { useMintCampaign, MintStatusEnum } from './hooks/useMintCampaign/';
+export { useProject } from './hooks/useProject/';
