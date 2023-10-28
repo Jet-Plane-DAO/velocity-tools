@@ -250,6 +250,7 @@ export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign 
           ix += 1;
         } else {
           tx.setMetadata(ix, Array(56).fill('0').join(''));
+          ix += 1;
           tx.setMetadata(ix, toHex(i.unit));
           ix += 1;
         }
