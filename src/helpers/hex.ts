@@ -1,4 +1,4 @@
-function toHex(str: string) {
+export function toHex(str: string) {
   var result = '';
   for (var i = 0; i < str.length; i++) {
     result += str.charCodeAt(i).toString(16);

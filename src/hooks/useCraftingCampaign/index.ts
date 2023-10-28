@@ -4,6 +4,7 @@ import { useWallet } from '@meshsdk/react';
 import { LOVELACE_MULTIPLIER } from '../../helpers/ada';
 import { useCampaignAssets } from '../useCampaignAssets';
 import PropTypes from 'prop-types';
+import { toHex } from '../../helpers/hex';
 
 type IUseCraftingCampaign = {
   check: () => void;
