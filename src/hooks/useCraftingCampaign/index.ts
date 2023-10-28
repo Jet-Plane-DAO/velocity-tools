@@ -164,6 +164,7 @@ export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign 
       if (!plan) throw new Error('Plan not found');
 
       for (const i of selectedInputs) {
+        if (i.policyId.length === 0) continue;
         const input = campaignConfig!.inputs.find(
           (x: any) => x.policyId === i.policyId,
         );
@@ -241,13 +242,14 @@ export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign 
       tx.setMetadata(0, { t: 'craft', p: planId, c: concurrent });
       let ix = 1;
       selectedInputs.forEach((i) => {
-        if (i.unit.length > 64) {
+        if (i.unit.length > 56) {
           tx.setMetadata(ix, i.unit.slice(0, 56));
           ix += 1;
           tx.setMetadata(ix, i.unit.slice(56));
           ix += 1;
         } else {
-          tx.setMetadata(ix, i.unit);
+          tx.setMetadata(ix, Array(56).fill('0').join(''));
+          tx.setMetadata(ix, toHex(i.unit));
           ix += 1;
         }
       });
