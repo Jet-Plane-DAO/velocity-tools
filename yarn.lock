@@ -6260,6 +6260,11 @@ he@^1.2.0:
   resolved "https://registry.npmjs.org/he/-/he-1.2.0.tgz"
   integrity sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==
 
+hexyjs@^2.1.4:
+  version "2.1.4"
+  resolved "https://registry.npmjs.org/hexyjs/-/hexyjs-2.1.4.tgz"
+  integrity sha512-xv4pjwHoOauMxpPMSyDK+b5sIQ9aBRDtoDJjxf5WBYIDc2NYRtp3Q5LBdXuZ245XzISmzuon0P7XznmttSH7LA==
+
 hmac-drbg@^1.0.1:
   version "1.0.1"
   resolved "https://registry.npmjs.org/hmac-drbg/-/hmac-drbg-1.0.1.tgz"
