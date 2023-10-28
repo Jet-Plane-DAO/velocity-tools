@@ -181,7 +181,7 @@ export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign 
 
       const sendingToken = quoteResponse.quote.price !== 0;
       const sendingAda = quoteResponse.quote.time === 0;
-
+      const assetsToInclude = quoteResponse.quote.assetsToInclude || [];
       const assetMap = new Map();
       if (sendingAda) {
         assetMap.set(
@@ -194,6 +194,10 @@ export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign 
 
       if (sendingToken) {
         assetMap.set(campaignConfig.tokenAssetName, `${quoteResponse.quote.price}`);
+      }
+
+      if (assetsToInclude.length) {
+        assetsToInclude.map((a: any) => assetMap.set(a.asset, `1`));
       }
 
       const relevant = keepRelevant(
@@ -221,6 +225,17 @@ export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign 
             quantity: `${quoteResponse.quote.price}`,
           },
         ]);
+      }
+
+      if (assetsToInclude.length) {
+        assetsToInclude.map((a: any) =>
+          tx.sendAssets({ address: campaignConfig.walletAddress }, [
+            {
+              unit: a.asset,
+              quantity: `1`,
+            },
+          ]),
+        );
       }
 
       tx.setMetadata(0, { t: 'craft', p: planId, c: concurrent });
