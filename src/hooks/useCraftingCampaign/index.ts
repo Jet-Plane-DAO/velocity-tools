@@ -4,7 +4,7 @@ import { useWallet } from '@meshsdk/react';
 import { LOVELACE_MULTIPLIER } from '../../helpers/ada';
 import { useCampaignAssets } from '../useCampaignAssets';
 import PropTypes from 'prop-types';
-import { OFFCHAIN_POLICY_ID, toAssetName } from '../..';
+import { isPolicyOffChain } from '../..';
 
 type IUseCraftingCampaign = {
   check: () => void;
@@ -165,7 +165,7 @@ export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign 
       if (!plan) throw new Error('Plan not found');
 
       for (const i of selectedInputs) {
-        if (i.policyId.length === 0 || i.policyId === OFFCHAIN_POLICY_ID) continue;
+        if (i.policyId.length === 0 || isPolicyOffChain(i.policyId)) continue;
         const input = campaignConfig!.inputs.find(
           (x: any) => x.policyId === i.policyId,
         );
@@ -247,11 +247,6 @@ export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign 
           tx.setMetadata(ix, i.unit.slice(0, 56));
           ix += 1;
           tx.setMetadata(ix, i.unit.slice(56));
-          ix += 1;
-        } else {
-          tx.setMetadata(ix, OFFCHAIN_POLICY_ID);
-          ix += 1;
-          tx.setMetadata(ix, toAssetName(i.unit));
           ix += 1;
         }
       });

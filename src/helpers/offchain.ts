@@ -1,6 +1,23 @@
-import { strToHex } from 'hexyjs';
+import { hexToStr, strToHex } from 'hexyjs';
 
-export const OFFCHAIN_POLICY_ID = Array(56).fill('0').join('');
+// export const OFFCHAIN_POLICY_ID = Array(56).fill('0').join('');
+
+export const toOffChainPolicy = (policyId: string) => {
+  const policy = `ocp://${policyId}//`;
+  const fill = Array(56 - policy.length)
+    .fill('0')
+    .join('');
+  return strToHex(policy + fill);
+};
+
+export const toOffChainUnit = (assetName: string, collectionId: string) => {
+  return `${toOffChainPolicy(collectionId)}${toAssetName(assetName)}`;
+};
+
+export const isPolicyOffChain = (policyId: string) => {
+  if (!hexToStr(policyId)) return false;
+  return hexToStr(policyId).toString().startsWith('ocp://');
+};
 
 export const toAssetName = (assetName: string) => {
   return strToHex(assetName);

@@ -10,4 +10,9 @@ export {
 export { useMintCampaign, MintStatusEnum } from './hooks/useMintCampaign/';
 export { useProject } from './hooks/useProject/';
 
-export { toAssetName, OFFCHAIN_POLICY_ID } from './helpers/offchain';
+export {
+  toAssetName,
+  isPolicyOffChain,
+  toOffChainPolicy,
+  toOffChainUnit,
+} from './helpers/offchain';
