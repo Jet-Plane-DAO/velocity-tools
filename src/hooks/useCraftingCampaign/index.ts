@@ -4,8 +4,7 @@ import { useWallet } from '@meshsdk/react';
 import { LOVELACE_MULTIPLIER } from '../../helpers/ada';
 import { useCampaignAssets } from '../useCampaignAssets';
 import PropTypes from 'prop-types';
-import { strToHex } from 'hexyjs';
-import { OFFCHAIN_POLICY_ID } from '../..';
+import { OFFCHAIN_POLICY_ID, toAssetName } from '../..';
 
 type IUseCraftingCampaign = {
   check: () => void;
@@ -252,7 +251,7 @@ export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign 
         } else {
           tx.setMetadata(ix, OFFCHAIN_POLICY_ID);
           ix += 1;
-          tx.setMetadata(ix, strToHex(i.unit));
+          tx.setMetadata(ix, toAssetName(i.unit));
           ix += 1;
         }
       });
