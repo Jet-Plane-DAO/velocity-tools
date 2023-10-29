@@ -5,6 +5,7 @@ import { LOVELACE_MULTIPLIER } from '../../helpers/ada';
 import { useCampaignAssets } from '../useCampaignAssets';
 import PropTypes from 'prop-types';
 import { strToHex } from 'hexyjs';
+import { OFFCHAIN_POLICY_ID } from '../..';
 
 type IUseCraftingCampaign = {
   check: () => void;
@@ -165,7 +166,7 @@ export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign 
       if (!plan) throw new Error('Plan not found');
 
       for (const i of selectedInputs) {
-        if (i.policyId.length === 0) continue;
+        if (i.policyId.length === 0 || i.policyId === OFFCHAIN_POLICY_ID) continue;
         const input = campaignConfig!.inputs.find(
           (x: any) => x.policyId === i.policyId,
         );
@@ -249,7 +250,7 @@ export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign 
           tx.setMetadata(ix, i.unit.slice(56));
           ix += 1;
         } else {
-          tx.setMetadata(ix, Array(56).fill('0').join(''));
+          tx.setMetadata(ix, OFFCHAIN_POLICY_ID);
           ix += 1;
           tx.setMetadata(ix, strToHex(i.unit));
           ix += 1;
