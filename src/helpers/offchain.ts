@@ -1,10 +1,8 @@
 import { hexToStr, strToHex } from 'hexyjs';
 
-// export const OFFCHAIN_POLICY_ID = Array(56).fill('0').join('');
-
 export const toOffChainPolicy = (policyId: string) => {
   const policy = `ocp://${policyId}//`;
-  const fill = Array(56 - policy.length)
+  const fill = Array((56 - policy.length * 2) / 2)
     .fill('0')
     .join('');
   return strToHex(policy + fill);
