@@ -4,6 +4,8 @@ import { useWallet } from '@meshsdk/react';
 import { LOVELACE_MULTIPLIER } from '../../helpers/ada';
 import { useCampaignAssets } from '../useCampaignAssets';
 import PropTypes from 'prop-types';
+import { isPolicyOffChain } from '../../helpers/offchain';
+import { sendAssets, setAddressMetadata, submitTx } from '../../helpers/tx';
 
 type IUseMintCampaign = {
   check: () => void;
@@ -162,7 +164,8 @@ export const useMintCampaign = (campaignKey?: string): IUseMintCampaign => {
       if (!plan) throw new Error('Plan not found');
 
       for (const i of selectedInputs) {
-        const input = campaignConfig!.inputs.find(
+        if (!i.policyId?.length || isPolicyOffChain(i.policyId)) continue;
+        const input = campaignConfig?.inputs?.find(
           (x: any) => x.policyId === i.policyId,
         );
         if (!input) throw new Error('Input not found');
@@ -175,69 +178,27 @@ export const useMintCampaign = (campaignKey?: string): IUseMintCampaign => {
       );
       if (!quoteResponse?.quote) throw new Error('Quote not found');
 
-      const utxos = await wallet.getUtxos();
-
-      const sendingToken = quoteResponse.quote.price !== 0;
-      const sendingAda = quoteResponse.quote.time === 0;
-
-      const assetMap = new Map();
-      assetMap.set(
-        'lovelace',
-        `${quoteResponse.quote.fee * LOVELACE_MULTIPLIER + 2 * LOVELACE_MULTIPLIER}`,
+      const tx = new Transaction({ initiator: wallet });
+      await sendAssets(
+        quoteResponse.quote.fee,
+        quoteResponse.quote.price,
+        (quoteResponse.quote.assetsToInclude || []).map((x: any) => x.asset),
+        tx,
+        wallet,
+        campaignConfig,
       );
-
-      if (sendingToken) {
-        assetMap.set(campaignConfig.tokenAssetName, `${quoteResponse.quote.price}`);
-      }
-
-      const relevant = keepRelevant(
-        assetMap,
-        utxos,
-        `${quoteResponse.quote.fee * LOVELACE_MULTIPLIER + 2 * LOVELACE_MULTIPLIER}`,
-      );
-      console.log(relevant);
-      const tx = new Transaction({ initiator: wallet }).setTxInputs(
-        relevant.length ? relevant : utxos,
-      );
-      console.log(tx);
-      if (sendingAda) {
-        tx.sendLovelace(
-          { address: campaignConfig.walletAddress },
-          `${quoteResponse.quote.fee * LOVELACE_MULTIPLIER}`,
-        );
-      }
-      if (sendingToken) {
-        tx.sendAssets({ address: campaignConfig.walletAddress }, [
-          {
-            unit: campaignConfig.tokenAssetName,
-            quantity: `${quoteResponse.quote.price}`,
-          },
-        ]);
-      }
 
       tx.setMetadata(0, { t: 'mint', p: planId, c: concurrent });
-      console.log({ t: 'mint', p: planId, c: concurrent });
       let ix = 1;
       selectedInputs.forEach((i) => {
-        if (i.unit.length > 64) {
-          tx.setMetadata(ix, i.unit.slice(0, 56));
-          ix += 1;
-          tx.setMetadata(ix, i.unit.slice(56));
-          ix += 1;
-        } else {
-          tx.setMetadata(ix, i.unit);
-          ix += 1;
-        }
+        setAddressMetadata(tx, ix, i.unit);
       });
       if (availableBP) {
-        tx.setMetadata(ix, availableBP.unit.slice(0, 56));
-        ix += 1;
-        tx.setMetadata(ix, availableBP.unit.slice(56));
-        ix += 1;
+        setAddressMetadata(tx, ix, availableBP.unit);
       }
-      const unsignedTx = await tx.build();
-      const signedTx = await wallet.signTx(unsignedTx);
-      const hash = await wallet.submitTx(signedTx);
+
+      const hash = await submitTx(tx, wallet);
+
       return hash;
     },
     [availableBP, connected, wallet, status, campaignConfig],

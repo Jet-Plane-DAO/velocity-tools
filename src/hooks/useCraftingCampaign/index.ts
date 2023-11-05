@@ -234,16 +234,9 @@ export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign 
       const craft = craftingData.crafts.find((c: any) => c.id === craftId);
       if (!craft) throw new Error('Craft not found');
 
-      const amountLovelace = `${craft.quote.fee * LOVELACE_MULTIPLIER}`;
-      const utxos = await wallet.getUtxos();
-      const assetMap = new Map();
-      assetMap.set('lovelace', `${amountLovelace}`);
-
-      const relevant = keepRelevant(assetMap, utxos, amountLovelace);
-      const tx = new Transaction({ initiator: wallet })
-        .setTxInputs(relevant.length ? relevant : utxos)
-        .sendLovelace({ address: campaignConfig.walletAddress }, amountLovelace)
-        .setMetadata(0, { t: 'claim', cid: craftId });
+      const tx = new Transaction({ initiator: wallet });
+      await sendAssets(craft.quote.fee, 0, [], tx, wallet, campaignConfig);
+      tx.setMetadata(0, { t: 'claim', cid: craftId });
 
       await submitTx(tx, wallet);
 
@@ -260,25 +253,9 @@ export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign 
       }
       setStatus(CraftingStatusEnum.UPGRADING);
 
-      const amountLovelace = `${10 * LOVELACE_MULTIPLIER}`;
-      const utxos = await wallet.getUtxos();
-      const assetMap = new Map();
-
-      assetMap.set('lovelace', `${amountLovelace}`);
-      for (const unit of upgradeUnits) {
-        assetMap.set(unit, `1`);
-      }
-
-      const relevant = keepRelevant(assetMap, utxos, amountLovelace);
-
-      const tx = new Transaction({ initiator: wallet })
-        .setTxInputs(relevant.length ? relevant : utxos)
-        .sendLovelace({ address: campaignConfig.walletAddress }, amountLovelace)
-        .sendAssets(
-          { address: campaignConfig.walletAddress },
-          upgradeUnits.map((unit) => ({ unit, quantity: '1' })),
-        )
-        .setMetadata(0, { t: 'upgrade' });
+      const tx = new Transaction({ initiator: wallet });
+      await sendAssets(10, 0, upgradeUnits, tx, wallet, campaignConfig);
+      tx.setMetadata(0, { t: 'upgrade' });
 
       const hash = await submitTx(tx, wallet);
 
