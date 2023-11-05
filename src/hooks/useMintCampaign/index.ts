@@ -218,7 +218,6 @@ export const useMintCampaign = (campaignKey?: string): IUseMintCampaign => {
       tx.setMetadata(0, { t: 'mint', p: planId, c: concurrent });
       console.log({ t: 'mint', p: planId, c: concurrent });
       let ix = 1;
-      console.log(selectedInputs);
       selectedInputs.forEach((i) => {
         if (i.unit.length > 64) {
           tx.setMetadata(ix, i.unit.slice(0, 56));
@@ -230,7 +229,6 @@ export const useMintCampaign = (campaignKey?: string): IUseMintCampaign => {
           ix += 1;
         }
       });
-      console.log(availableBP);
       if (availableBP) {
         tx.setMetadata(ix, availableBP.unit.slice(0, 56));
         ix += 1;
@@ -238,7 +236,6 @@ export const useMintCampaign = (campaignKey?: string): IUseMintCampaign => {
         ix += 1;
       }
       const unsignedTx = await tx.build();
-      console.log(unsignedTx);
       const signedTx = await wallet.signTx(unsignedTx);
       const hash = await wallet.submitTx(signedTx);
       return hash;

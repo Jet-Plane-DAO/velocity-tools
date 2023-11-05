@@ -166,7 +166,6 @@ export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign 
         craftingData,
         availableBP,
         connected,
-        wallet,
         status,
       });
       if (!connected) {
@@ -176,18 +175,23 @@ export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign 
       if (!plan) throw new Error('Plan not found');
 
       for (const i of selectedInputs) {
-        if (i.policyId.length === 0 || isPolicyOffChain(i.policyId)) continue;
+        if (!i.policyId?.length || isPolicyOffChain(i.policyId)) continue;
         const input = campaignConfig?.inputs?.find(
           (x: any) => x.policyId === i.policyId,
         );
         if (!input) throw new Error('Input not found');
       }
-
+      console.log('quote input', {
+        planId,
+        inputs: (selectedInputs || []).map((i) => i.unit),
+        concurrent,
+      });
       const quoteResponse = await quote(
         planId,
-        selectedInputs.map((i) => i.unit),
+        (selectedInputs || []).map((i) => i.unit),
         concurrent,
       );
+      console.log('quote response', quoteResponse);
       if (!quoteResponse?.quote) throw new Error('Quote not found');
 
       const utxos = await wallet.getUtxos();
