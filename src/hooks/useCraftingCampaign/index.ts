@@ -5,7 +5,13 @@ import { LOVELACE_MULTIPLIER } from '../../helpers/ada';
 import { useCampaignAssets } from '../useCampaignAssets';
 import PropTypes from 'prop-types';
 import { isPolicyOffChain } from '../..';
-import { logConfig, logTx, setAddressMetadata, submitTx } from '../../helpers/tx';
+import {
+  logConfig,
+  logTx,
+  sendAssets,
+  setAddressMetadata,
+  submitTx,
+} from '../../helpers/tx';
 
 const debug = process.env.NEXT_PUBLIC_ENABLE_DEBUG === 'true';
 
@@ -181,79 +187,25 @@ export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign 
         );
         if (!input) throw new Error('Input not found');
       }
-      console.log('quote input', {
-        planId,
-        inputs: (selectedInputs || []).map((i) => i.unit),
-        concurrent,
-      });
+
       const quoteResponse = await quote(
         planId,
         (selectedInputs || []).map((i) => i.unit),
         concurrent,
       );
-      console.log('quote response', quoteResponse);
+
       if (!quoteResponse?.quote) throw new Error('Quote not found');
 
-      const utxos = await wallet.getUtxos();
+      const tx = new Transaction({ initiator: wallet });
 
-      const sendingToken = quoteResponse.quote.price !== 0;
-      const sendingAda = quoteResponse.quote.time === 0;
-      const assetsToInclude = quoteResponse.quote.assetsToInclude || [];
-      const assetMap = new Map();
-      if (sendingAda) {
-        assetMap.set(
-          'lovelace',
-          `${quoteResponse.quote.fee * LOVELACE_MULTIPLIER + 200000}`,
-        );
-      } else {
-        assetMap.set('lovelace', `${5 * LOVELACE_MULTIPLIER}`);
-      }
-
-      if (sendingToken) {
-        assetMap.set(campaignConfig.tokenAssetName, `${quoteResponse.quote.price}`);
-      }
-
-      if (assetsToInclude.length) {
-        assetsToInclude.map((a: any) => assetMap.set(a.asset, `1`));
-      }
-
-      const relevant = keepRelevant(
-        assetMap,
-        utxos,
-        sendingAda
-          ? `${quoteResponse.quote.fee * LOVELACE_MULTIPLIER + 200000}`
-          : '5000000',
+      await sendAssets(
+        quoteResponse.quote.fee,
+        quoteResponse.quote.price,
+        (quoteResponse.quote.assetsToInclude || []).map((x: any) => x.asset),
+        tx,
+        wallet,
+        campaignConfig,
       );
-
-      const tx = new Transaction({ initiator: wallet }).setTxInputs(
-        relevant.length ? relevant : utxos,
-      );
-
-      if (sendingAda) {
-        tx.sendLovelace(
-          { address: campaignConfig.walletAddress },
-          `${quoteResponse.quote.fee * LOVELACE_MULTIPLIER}`,
-        );
-      }
-      if (sendingToken) {
-        tx.sendAssets({ address: campaignConfig.walletAddress }, [
-          {
-            unit: campaignConfig.tokenAssetName,
-            quantity: `${quoteResponse.quote.price}`,
-          },
-        ]);
-      }
-
-      if (assetsToInclude.length) {
-        assetsToInclude.map((a: any) =>
-          tx.sendAssets({ address: campaignConfig.walletAddress }, [
-            {
-              unit: a.asset,
-              quantity: `1`,
-            },
-          ]),
-        );
-      }
 
       tx.setMetadata(0, { t: 'craft', p: planId, c: concurrent });
 
@@ -281,6 +233,7 @@ export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign 
 
       const craft = craftingData.crafts.find((c: any) => c.id === craftId);
       if (!craft) throw new Error('Craft not found');
+
       const amountLovelace = `${craft.quote.fee * LOVELACE_MULTIPLIER}`;
       const utxos = await wallet.getUtxos();
       const assetMap = new Map();
