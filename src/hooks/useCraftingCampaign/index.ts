@@ -5,7 +5,7 @@ import { LOVELACE_MULTIPLIER } from '../../helpers/ada';
 import { useCampaignAssets } from '../useCampaignAssets';
 import PropTypes from 'prop-types';
 import { isPolicyOffChain } from '../..';
-import { logTx, setAddressMetadata, submitTx } from '../../helpers/tx';
+import { logConfig, logTx, setAddressMetadata, submitTx } from '../../helpers/tx';
 
 const debug = process.env.NEXT_PUBLIC_ENABLE_DEBUG === 'true';
 
@@ -161,6 +161,14 @@ export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign 
 
   const craft = useCallback(
     async (planId: string, selectedInputs: any[], concurrent: number = 1) => {
+      logConfig({
+        campaignConfig,
+        craftingData,
+        availableBP,
+        connected,
+        wallet,
+        status,
+      });
       if (!connected) {
         throw new Error('Wallet not connected');
       }
@@ -169,7 +177,7 @@ export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign 
 
       for (const i of selectedInputs) {
         if (i.policyId.length === 0 || isPolicyOffChain(i.policyId)) continue;
-        const input = campaignConfig!.inputs.find(
+        const input = campaignConfig?.inputs?.find(
           (x: any) => x.policyId === i.policyId,
         );
         if (!input) throw new Error('Input not found');

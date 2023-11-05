@@ -1,6 +1,10 @@
-import { Asset, BrowserWallet, Transaction } from '@meshsdk/core';
+import { BrowserWallet, Transaction } from '@meshsdk/core';
 
 const debug = process.env.NEXT_PUBLIC_ENABLE_DEBUG === 'true';
+
+export const logConfig = (config: any) => {
+  if (debug) console.log('config', config);
+};
 
 export const logTx = (tx: any) => {
   if (!debug) return;

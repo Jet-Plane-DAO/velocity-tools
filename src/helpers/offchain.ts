@@ -14,8 +14,13 @@ export const toOffChainUnit = (assetName: string, collectionId: string) => {
 
 export const isPolicyOffChain = (policyId: string) => {
   console.log('checking ocp', policyId);
-  if (!hexToStr(policyId)) return false;
-  return hexToStr(policyId).toString().startsWith('ocp://');
+  try {
+    if (!hexToStr(policyId)) return false;
+    return hexToStr(policyId).toString().startsWith('ocp://');
+  } catch (error: any) {
+    console.error('isPolicyOffChain error', error.message);
+    return false;
+  }
 };
 
 export const toAssetName = (assetName: string) => {
