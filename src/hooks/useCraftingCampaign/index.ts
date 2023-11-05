@@ -5,6 +5,9 @@ import { LOVELACE_MULTIPLIER } from '../../helpers/ada';
 import { useCampaignAssets } from '../useCampaignAssets';
 import PropTypes from 'prop-types';
 import { isPolicyOffChain } from '../..';
+import { logTx, setAddressMetadata, submitTx } from '../../helpers/tx';
+
+const debug = process.env.NEXT_PUBLIC_ENABLE_DEBUG === 'true';
 
 type IUseCraftingCampaign = {
   check: () => void;
@@ -241,24 +244,17 @@ export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign 
       }
 
       tx.setMetadata(0, { t: 'craft', p: planId, c: concurrent });
+
       let ix = 1;
       selectedInputs.forEach((i) => {
-        if (i.unit.length > 56) {
-          tx.setMetadata(ix, i.unit.slice(0, 56));
-          ix += 1;
-          tx.setMetadata(ix, i.unit.slice(56));
-          ix += 1;
-        }
+        setAddressMetadata(tx, ix, i.unit);
       });
       if (availableBP) {
-        tx.setMetadata(ix, availableBP.unit.slice(0, 56));
-        ix += 1;
-        tx.setMetadata(ix, availableBP.unit.slice(56));
-        ix += 1;
+        setAddressMetadata(tx, ix, availableBP.unit);
       }
-      const unsignedTx = await tx.build();
-      const signedTx = await wallet.signTx(unsignedTx);
-      const hash = await wallet.submitTx(signedTx);
+
+      const hash = await submitTx(tx, wallet);
+
       return hash;
     },
     [availableBP, connected, wallet, status, campaignConfig],
@@ -283,9 +279,8 @@ export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign 
         .setTxInputs(relevant.length ? relevant : utxos)
         .sendLovelace({ address: campaignConfig.walletAddress }, amountLovelace)
         .setMetadata(0, { t: 'claim', cid: craftId });
-      const unsignedTx = await tx.build();
-      const signedTx = await wallet.signTx(unsignedTx);
-      await wallet.submitTx(signedTx);
+
+      await submitTx(tx, wallet);
 
       setStatus(CraftingStatusEnum.CLAIM_PENDING);
       return craftId;
@@ -320,9 +315,7 @@ export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign 
         )
         .setMetadata(0, { t: 'upgrade' });
 
-      const unsignedTx = await tx.build();
-      const signedTx = await wallet.signTx(unsignedTx);
-      const hash = await wallet.submitTx(signedTx);
+      const hash = await submitTx(tx, wallet);
 
       setStatus(CraftingStatusEnum.UPGRADE_PENDING);
       return hash;
