@@ -273,23 +273,18 @@ export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign 
 
       const craft = craftingData.crafts.find((c: any) => c.id === craftId);
       if (!craft) throw new Error('Craft not found');
-      console.log('1');
       const amountLovelace = `${craft.quote.fee * LOVELACE_MULTIPLIER}`;
       const utxos = await wallet.getUtxos();
       const assetMap = new Map();
-      console.log('2');
       assetMap.set('lovelace', `${amountLovelace}`);
 
       const relevant = keepRelevant(assetMap, utxos, amountLovelace);
-      console.log('3');
       const tx = new Transaction({ initiator: wallet })
         .setTxInputs(relevant.length ? relevant : utxos)
         .sendLovelace({ address: campaignConfig.walletAddress }, amountLovelace)
         .setMetadata(0, { t: 'claim', cid: craftId });
-      console.log('4');
       const unsignedTx = await tx.build();
       const signedTx = await wallet.signTx(unsignedTx);
-      console.log('5');
       await wallet.submitTx(signedTx);
 
       setStatus(CraftingStatusEnum.CLAIM_PENDING);
