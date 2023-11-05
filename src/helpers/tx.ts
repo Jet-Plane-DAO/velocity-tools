@@ -8,17 +8,14 @@ export const logConfig = (config: any) => {
 
 export const logTx = (tx: any) => {
   if (!debug) return;
-  const getProp = (prop: string): any => {
-    return this![prop];
-  };
-  (tx as any).getProp = getProp;
-
-  console.log('tx props', {
-    changeAddress: tx.getProp('_changeAddress'),
-    outputs: tx._txOutputs,
-    recipients: tx._recipients,
-    txWithdrawals: tx._txWithdrawals,
-  });
+  try {
+    console.log('tx props', {
+      changeAddress: tx['_changeAddress'],
+      outputs: tx._txOutputs,
+      recipients: tx._recipients,
+      txWithdrawals: tx._txWithdrawals,
+    });
+  } catch (error) {}
 };
 
 export const submitTx = async (tx: Transaction, wallet: BrowserWallet) => {
