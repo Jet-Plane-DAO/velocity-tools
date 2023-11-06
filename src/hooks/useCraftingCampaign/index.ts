@@ -1,19 +1,15 @@
 import { useCallback, useState } from 'react';
-import { Transaction, keepRelevant } from '@meshsdk/core';
+import { Transaction } from '@meshsdk/core';
 import { useWallet } from '@meshsdk/react';
-import { LOVELACE_MULTIPLIER } from '../../helpers/ada';
 import { useCampaignAssets } from '../useCampaignAssets';
 import PropTypes from 'prop-types';
 import { isPolicyOffChain } from '../..';
 import {
   logConfig,
-  logTx,
   sendAssets,
   setAddressMetadata,
   submitTx,
 } from '../../helpers/tx';
-
-const debug = process.env.NEXT_PUBLIC_ENABLE_DEBUG === 'true';
 
 type IUseCraftingCampaign = {
   check: () => void;

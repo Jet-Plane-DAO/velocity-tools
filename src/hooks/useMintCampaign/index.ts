@@ -1,7 +1,6 @@
 import { useCallback, useState } from 'react';
-import { Transaction, keepRelevant } from '@meshsdk/core';
+import { Transaction } from '@meshsdk/core';
 import { useWallet } from '@meshsdk/react';
-import { LOVELACE_MULTIPLIER } from '../../helpers/ada';
 import { useCampaignAssets } from '../useCampaignAssets';
 import PropTypes from 'prop-types';
 import { isPolicyOffChain } from '../../helpers/offchain';
