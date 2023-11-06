@@ -211,10 +211,10 @@ export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign 
 
       let ix = 1;
       selectedInputs.forEach((i) => {
-        setAddressMetadata(tx, ix, i.unit);
+        ix = setAddressMetadata(tx, ix, i.unit);
       });
       if (availableBP) {
-        setAddressMetadata(tx, ix, availableBP.unit);
+        ix = setAddressMetadata(tx, ix, availableBP.unit);
       }
 
       const hash = await submitTx(tx, wallet);
