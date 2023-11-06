@@ -105,8 +105,5 @@ export const setAddressMetadata = (tx: any, ix: number, address: any) => {
   } else {
     if (debug) console.log('invalid address for metadata [${ix}]', address);
   }
+  return ix;
 };
-
-// export const sendAssets = async (tx: Transaction, adaAmount: number, nativeTokenAmount: number, assetUnits: string[]) {
-
-// }
