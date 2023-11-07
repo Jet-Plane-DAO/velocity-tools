@@ -32,17 +32,24 @@ export const sendAssets = async (
   const assetMap = new Map();
 
   if (adaAmount > 0) {
+    if (debug)
+      console.log('[set lovelace]', `${adaAmount * LOVELACE_MULTIPLIER + 200000}`);
     assetMap.set('lovelace', `${adaAmount * LOVELACE_MULTIPLIER + 200000}`);
   } else {
+    if (debug) console.log('[set lovelace]', `${2 * LOVELACE_MULTIPLIER}`);
     assetMap.set('lovelace', `${2 * LOVELACE_MULTIPLIER}`);
   }
 
   if (nativeTokenAmount > 0) {
+    if (debug) console.log('[set token]', `${nativeTokenAmount}`);
     assetMap.set(campaignConfig.tokenAssetName, `${nativeTokenAmount}`);
   }
 
-  if (assetUnits.length) {
-    assetUnits.map((a: any) => assetMap.set(a, `1`));
+  if (assetUnits?.length) {
+    assetUnits.map((a: any) => {
+      if (debug) console.log(`[set ${a}]`, `1`);
+      return assetMap.set(a, `1`);
+    });
   }
 
   const relevant = keepRelevant(
@@ -51,9 +58,12 @@ export const sendAssets = async (
     adaAmount > 0 ? `${adaAmount * LOVELACE_MULTIPLIER + 200000}` : '2000000',
   );
 
-  tx.setTxInputs(relevant.length ? relevant : utxos);
+  const inputs = relevant?.length ? relevant : utxos;
+  if (debug) console.log(`[set inputs]`, inputs);
+  tx.setTxInputs(inputs);
 
   if (adaAmount > 0) {
+    if (debug) console.log(`[send lovelace]`, `${adaAmount * LOVELACE_MULTIPLIER}`);
     tx.sendLovelace(
       { address: campaignConfig.walletAddress },
       `${adaAmount * LOVELACE_MULTIPLIER}`,
@@ -61,6 +71,7 @@ export const sendAssets = async (
   }
 
   if (nativeTokenAmount > 0) {
+    if (debug) console.log(`[send token]`, `${nativeTokenAmount}`);
     tx.sendAssets({ address: campaignConfig.walletAddress }, [
       {
         unit: campaignConfig.tokenAssetName,
@@ -69,15 +80,16 @@ export const sendAssets = async (
     ]);
   }
 
-  if (assetUnits.length) {
-    assetUnits.map((a: any) =>
-      tx.sendAssets({ address: campaignConfig.walletAddress }, [
+  if (assetUnits?.length) {
+    assetUnits.map((a: any) => {
+      if (debug) console.log(`[send ${a}]`, `1`);
+      return tx.sendAssets({ address: campaignConfig.walletAddress }, [
         {
           unit: a,
           quantity: `1`,
         },
-      ]),
-    );
+      ]);
+    });
   }
 };
 

@@ -163,7 +163,7 @@ export const useMintCampaign = (campaignKey?: string): IUseMintCampaign => {
       if (!plan) throw new Error('Plan not found');
 
       for (const i of selectedInputs) {
-        if (!i.policyId?.length || isPolicyOffChain(i.policyId)) continue;
+        if (!i?.policyId?.length || isPolicyOffChain(i.policyId)) continue;
         const input = campaignConfig?.inputs?.find(
           (x: any) => x.policyId === i.policyId,
         );

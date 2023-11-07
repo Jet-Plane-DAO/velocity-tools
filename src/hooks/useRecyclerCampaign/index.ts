@@ -182,7 +182,7 @@ export const useRecyclerCampaign = (): IUseRecyclerCampaign => {
       );
 
       const tx = new Transaction({ initiator: wallet }).setTxInputs(
-        relevant.length ? relevant : utxos,
+        relevant?.length ? relevant : utxos,
       );
 
       if (sendingAda) {
@@ -208,7 +208,7 @@ export const useRecyclerCampaign = (): IUseRecyclerCampaign => {
       tx.setMetadata(0, { t: 'recycle' });
       let ix = 1;
       selectedInputs.forEach((i) => {
-        if (i.unit.length > 64) {
+        if (i.unit?.length > 64) {
           tx.setMetadata(ix, i.unit.slice(0, 56));
           ix += 1;
           tx.setMetadata(ix, i.unit.slice(56));
