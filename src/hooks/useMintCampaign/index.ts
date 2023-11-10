@@ -82,6 +82,7 @@ export const useMintCampaign = (campaignKey?: string): IUseMintCampaign => {
 
   const check = useCallback(
     (includeItems?: boolean) => {
+      console.log(includeItems);
       if (!connected) {
         throw new Error('Wallet not connected');
       }
