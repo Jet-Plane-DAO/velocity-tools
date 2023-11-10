@@ -12,7 +12,7 @@ import {
 } from '../../helpers/tx';
 
 type IUseCraftingCampaign = {
-  check: () => void;
+  check: (includeItems: boolean) => void;
   craft: (planId: string, input: any[], concurrent: number) => Promise<string>;
   claim: (craftId: string) => Promise<string>;
   quote: (planId: string, inputUnits: string[], concurrent: number) => Promise<any>;

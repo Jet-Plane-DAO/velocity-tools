@@ -7,7 +7,7 @@ import { isPolicyOffChain } from '../../helpers/offchain';
 import { sendAssets, setAddressMetadata, submitTx } from '../../helpers/tx';
 
 type IUseMintCampaign = {
-  check: () => void;
+  check: (includeItems: boolean) => void;
   mint: (planId: string, input: any[], concurrent: number) => void;
   quote: (planId: string, inputUnits: string[], concurrent: number) => Promise<any>;
   campaignConfig: any;
