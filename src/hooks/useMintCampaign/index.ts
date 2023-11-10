@@ -7,7 +7,7 @@ import { isPolicyOffChain } from '../../helpers/offchain';
 import { sendAssets, setAddressMetadata, submitTx } from '../../helpers/tx';
 
 type IUseMintCampaign = {
-  check: (includeItems?: boolean) => Promise<void>;
+  check: (includeItems?: boolean) => void;
   mint: (planId: string, input: any[], concurrent: number) => void;
   quote: (planId: string, inputUnits: string[], concurrent: number) => Promise<any>;
   campaignConfig: any;
@@ -73,54 +73,54 @@ export enum MintStatusEnum {
  *    }
  */
 
-export const useMintCampaign = (
-  campaignKey?: string,
-  includeItems?: boolean,
-): IUseMintCampaign => {
+export const useMintCampaign = (campaignKey?: string): IUseMintCampaign => {
   const { craftingData, setCraftingData, availableBP } = useCampaignAssets();
   const [status, setStatus] = useState<MintStatusEnum>(MintStatusEnum.INIT);
   const [campaignConfig, setConfigData] = useState<any | null>(null);
   const [quoteData, setQuoteData] = useState<any | null>(null);
   const { wallet, connected } = useWallet();
 
-  const check = async () => {
-    if (!connected) {
-      throw new Error('Wallet not connected');
-    }
-    if (status === MintStatusEnum.INIT) {
-      setStatus(MintStatusEnum.CHECKING);
-      const addresses = await wallet.getRewardAddresses();
-      const stakeKey = addresses[0];
-      const requestHeaders: HeadersInit = new Headers();
-      requestHeaders.set(
-        'jetplane-api-key',
-        process.env.NEXT_PUBLIC_VELOCITY_API_KEY ?? '',
-      );
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${
-          campaignKey || process.env.NEXT_PUBLIC_VELOCITY_MINTING_CAMPAIGN_NAME
-        }/check/${stakeKey}${
-          includeItems
-            ? `?${new URLSearchParams({
-                includeItems: 'true',
-              }).toString()}`
-            : ''
-        }`,
-        { headers: requestHeaders },
-      );
-      if (res.status === 200) {
-        const data = await res.json();
-        setCraftingData(data?.status || { crafts: [], mints: [], locked: [] });
-        setConfigData(data.config);
-        setStatus(MintStatusEnum.READY);
-      } else {
-        const data = await res.json();
-        setConfigData(data.config);
-        setStatus(MintStatusEnum.READY);
+  const check = useCallback(
+    async (includeItems?: boolean) => {
+      if (!connected) {
+        throw new Error('Wallet not connected');
       }
-      return;
-    }
-  };
+      if (status === MintStatusEnum.INIT) {
+        setStatus(MintStatusEnum.CHECKING);
+        const addresses = await wallet.getRewardAddresses();
+        const stakeKey = addresses[0];
+        const requestHeaders: HeadersInit = new Headers();
+        requestHeaders.set(
+          'jetplane-api-key',
+          process.env.NEXT_PUBLIC_VELOCITY_API_KEY ?? '',
+        );
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${
+            campaignKey || process.env.NEXT_PUBLIC_VELOCITY_MINTING_CAMPAIGN_NAME
+          }/check/${stakeKey}${
+            includeItems
+              ? `?${new URLSearchParams({
+                  includeItems: 'true',
+                }).toString()}`
+              : ''
+          }`,
+          { headers: requestHeaders },
+        );
+        if (res.status === 200) {
+          const data = await res.json();
+          setCraftingData(data?.status || { crafts: [], mints: [], locked: [] });
+          setConfigData(data.config);
+          setStatus(MintStatusEnum.READY);
+        } else {
+          const data = await res.json();
+          setConfigData(data.config);
+          setStatus(MintStatusEnum.READY);
+        }
+        return;
+      }
+    },
+    [connected, wallet],
+  );
 
   const quote = async (
     planId: string,
