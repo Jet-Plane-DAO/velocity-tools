@@ -80,50 +80,46 @@ export const useMintCampaign = (campaignKey?: string): IUseMintCampaign => {
   const [quoteData, setQuoteData] = useState<any | null>(null);
   const { wallet, connected } = useWallet();
 
-  const check = useCallback(
-    (includeItems?: boolean) => {
-      console.log(includeItems);
-      if (!connected) {
-        throw new Error('Wallet not connected');
-      }
-      if (status === MintStatusEnum.INIT) {
-        setStatus(MintStatusEnum.CHECKING);
-        wallet.getRewardAddresses().then((addresses: any) => {
-          const stakeKey = addresses[0];
-          const requestHeaders: HeadersInit = new Headers();
-          requestHeaders.set(
-            'jetplane-api-key',
-            process.env.NEXT_PUBLIC_VELOCITY_API_KEY ?? '',
-          );
-          fetch(
-            `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${
-              campaignKey || process.env.NEXT_PUBLIC_VELOCITY_MINTING_CAMPAIGN_NAME
-            }/check/${stakeKey}${
-              includeItems
-                ? new URLSearchParams({
-                    includeItems: 'true',
-                  })
-                : ''
-            }`,
-            { headers: requestHeaders },
-          ).then(async (res) => {
-            if (res.status === 200) {
-              const data = await res.json();
-              setCraftingData(data?.status || { crafts: [], mints: [], locked: [] });
-              setConfigData(data.config);
-              setStatus(MintStatusEnum.READY);
-            } else {
-              const data = await res.json();
-              setConfigData(data.config);
-              setStatus(MintStatusEnum.READY);
-            }
-            return;
-          });
+  const check = (includeItems?: boolean) => {
+    if (!connected) {
+      throw new Error('Wallet not connected');
+    }
+    if (status === MintStatusEnum.INIT) {
+      setStatus(MintStatusEnum.CHECKING);
+      wallet.getRewardAddresses().then((addresses: any) => {
+        const stakeKey = addresses[0];
+        const requestHeaders: HeadersInit = new Headers();
+        requestHeaders.set(
+          'jetplane-api-key',
+          process.env.NEXT_PUBLIC_VELOCITY_API_KEY ?? '',
+        );
+        fetch(
+          `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${
+            campaignKey || process.env.NEXT_PUBLIC_VELOCITY_MINTING_CAMPAIGN_NAME
+          }/check/${stakeKey}${
+            includeItems
+              ? new URLSearchParams({
+                  includeItems: 'true',
+                })
+              : ''
+          }`,
+          { headers: requestHeaders },
+        ).then(async (res) => {
+          if (res.status === 200) {
+            const data = await res.json();
+            setCraftingData(data?.status || { crafts: [], mints: [], locked: [] });
+            setConfigData(data.config);
+            setStatus(MintStatusEnum.READY);
+          } else {
+            const data = await res.json();
+            setConfigData(data.config);
+            setStatus(MintStatusEnum.READY);
+          }
+          return;
         });
-      }
-    },
-    [connected, wallet],
-  );
+      });
+    }
+  };
 
   const quote = async (
     planId: string,
