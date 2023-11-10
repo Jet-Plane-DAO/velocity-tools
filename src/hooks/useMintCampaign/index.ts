@@ -73,15 +73,17 @@ export enum MintStatusEnum {
  *    }
  */
 
-export const useMintCampaign = (campaignKey?: string): IUseMintCampaign => {
+export const useMintCampaign = (
+  campaignKey?: string,
+  includeItems?: boolean,
+): IUseMintCampaign => {
   const { craftingData, setCraftingData, availableBP } = useCampaignAssets();
   const [status, setStatus] = useState<MintStatusEnum>(MintStatusEnum.INIT);
   const [campaignConfig, setConfigData] = useState<any | null>(null);
   const [quoteData, setQuoteData] = useState<any | null>(null);
   const { wallet, connected } = useWallet();
 
-  const check = async (includeItems?: boolean) => {
-    console.log(includeItems);
+  const check = async () => {
     if (!connected) {
       throw new Error('Wallet not connected');
     }
