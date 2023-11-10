@@ -89,6 +89,7 @@ export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign 
 
   const check = useCallback(
     (includeItems?: boolean) => {
+      console.log(includeItems);
       if (!connected) {
         throw new Error('Wallet not connected');
       }
