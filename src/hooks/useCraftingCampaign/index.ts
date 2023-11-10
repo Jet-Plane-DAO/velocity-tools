@@ -79,7 +79,6 @@ export enum CraftingStatusEnum {
  *      )
  *    }
  */
-
 export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign => {
   const { craftingData, setCraftingData, availableBP } = useCampaignAssets();
   const [status, setStatus] = useState<CraftingStatusEnum>(CraftingStatusEnum.INIT);
