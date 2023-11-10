@@ -104,7 +104,13 @@ export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign 
           fetch(
             `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${
               campaignKey || process.env.NEXT_PUBLIC_VELOCITY_CRAFTING_CAMPAIGN_NAME
-            }/check/${stakeKey}${includeItems ? '?includeItems=true' : ''}`,
+            }/check/${stakeKey}${
+              includeItems
+                ? new URLSearchParams({
+                    includeItems: 'true',
+                  })
+                : ''
+            }`,
             { headers: requestHeaders },
           ).then(async (res) => {
             if (res.status === 200) {
