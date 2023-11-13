@@ -1,9 +1,10 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useWallet } from '@meshsdk/react';
 
 type IUseProject = {
   activity: (forWallet: boolean) => Promise<any>;
   leaderboard: () => Promise<any>;
+  isFetching: boolean;
 };
 
 /**
@@ -20,6 +21,8 @@ type IUseProject = {
 
 export const useProject = (): IUseProject => {
   const { wallet, connected } = useWallet();
+
+  const [isFetching, setIsFetching] = useState(true);
 
   const leaderboard = useCallback(async () => {
     const requestHeaders: HeadersInit = new Headers();
@@ -49,6 +52,7 @@ export const useProject = (): IUseProject => {
         { headers: requestHeaders },
       );
       const data = await res.json();
+      setIsFetching(false);
       return data;
     },
     [connected, wallet],
@@ -57,6 +61,7 @@ export const useProject = (): IUseProject => {
   return {
     activity,
     leaderboard,
+    isFetching,
   };
 };
 
