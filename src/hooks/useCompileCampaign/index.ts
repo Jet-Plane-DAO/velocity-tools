@@ -5,6 +5,7 @@ import { useCampaignAssets } from '../useCampaignAssets';
 import PropTypes from 'prop-types';
 import { isPolicyOffChain } from '../../helpers/offchain';
 import { sendAssets, setAddressMetadata, submitTx } from '../../helpers/tx';
+import { fetchCheck, fetchQuote } from '../../helpers/quote';
 
 type IUseCompileCampaign = {
   check: (includeItems?: boolean) => void;

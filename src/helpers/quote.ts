@@ -1,4 +1,4 @@
-const fetchCheck = async (
+export const fetchCheck = async (
   stakeKey: string,
   includeItems?: boolean,
   campaignKey?: string,
@@ -28,7 +28,7 @@ const fetchCheck = async (
   };
 };
 
-const fetchQuote = async (
+export const fetchQuote = async (
   planId: string,
   inputUnits: string[],
   concurrent: number = 1,
