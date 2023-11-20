@@ -3,6 +3,7 @@ import { Transaction, keepRelevant } from '@meshsdk/core';
 import { useWallet } from '@meshsdk/react';
 import { LOVELACE_MULTIPLIER } from '../../helpers/ada';
 import { useCampaignAssets } from '../useCampaignAssets';
+import { sendAssets, setAddressMetadata, submitTx } from '../../helpers/tx';
 
 type IUseRecyclerCampaign = {
   check: () => void;
@@ -67,7 +68,7 @@ export enum RecyclerStatusEnum {
  *    }
  */
 
-export const useRecyclerCampaign = (): IUseRecyclerCampaign => {
+export const useRecyclerCampaign = (campaignKey?: string): IUseRecyclerCampaign => {
   const { availableBP } = useCampaignAssets();
   const [recyclerData, setRecyclerData] = useState<any | null>(null);
   const [status, setStatus] = useState<RecyclerStatusEnum>(RecyclerStatusEnum.INIT);
@@ -89,7 +90,9 @@ export const useRecyclerCampaign = (): IUseRecyclerCampaign => {
           process.env.NEXT_PUBLIC_VELOCITY_API_KEY ?? '',
         );
         fetch(
-          `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${process.env.NEXT_PUBLIC_VELOCITY_RECYCLER_CAMPAIGN_NAME}/check/${stakeKey}`,
+          `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${
+            campaignKey || process.env.NEXT_PUBLIC_VELOCITY_RECYCLER_CAMPAIGN_NAME
+          }/check/${stakeKey}`,
           { headers: requestHeaders },
         ).then(async (res) => {
           if (res.status === 200) {
@@ -118,7 +121,9 @@ export const useRecyclerCampaign = (): IUseRecyclerCampaign => {
       inputUnits.push(availableBP.unit);
     }
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${process.env.NEXT_PUBLIC_VELOCITY_RECYCLER_CAMPAIGN_NAME}/quote`,
+      `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${
+        campaignKey || process.env.NEXT_PUBLIC_VELOCITY_RECYCLER_CAMPAIGN_NAME
+      }/quote`,
       {
         headers: requestHeaders,
         method: 'post',
@@ -159,74 +164,26 @@ export const useRecyclerCampaign = (): IUseRecyclerCampaign => {
       );
       if (!quoteResponse?.quote) throw new Error('Quote not found');
 
-      const utxos = await wallet.getUtxos();
-
-      const sendingToken = quoteResponse.quote.price !== 0;
-      const sendingAda = quoteResponse.quote.time === 0;
-
-      const assetMap = new Map();
-      if (sendingAda) {
-        assetMap.set('lovelace', `${quoteResponse.quote.fee * LOVELACE_MULTIPLIER}`);
-      }
-      if (sendingToken) {
-        assetMap.set(campaignConfig.tokenAssetName, `${quoteResponse.quote.price}`);
-      }
-      for (const unit of recycleUnits) {
-        assetMap.set(unit, `${1}`);
-      }
-
-      const relevant = keepRelevant(
-        assetMap,
-        utxos,
-        sendingAda ? `${quoteResponse.quote.fee * LOVELACE_MULTIPLIER}` : '5000000',
-      );
-
-      const tx = new Transaction({ initiator: wallet }).setTxInputs(
-        relevant?.length ? relevant : utxos,
-      );
-
-      if (sendingAda) {
-        tx.sendLovelace(
-          { address: campaignConfig.walletAddress },
-          `${quoteResponse.quote.fee * LOVELACE_MULTIPLIER}`,
-        );
-      }
-      if (sendingToken) {
-        tx.sendAssets({ address: campaignConfig.walletAddress }, [
-          {
-            unit: campaignConfig.tokenAssetName,
-            quantity: `${quoteResponse.quote.price}`,
-          },
-        ]);
-      }
-
-      tx.sendAssets(
-        { address: campaignConfig.walletAddress },
-        recycleUnits.map((unit) => ({ unit, quantity: '1' })),
+      const tx = new Transaction({ initiator: wallet });
+      await sendAssets(
+        quoteResponse.quote.fee,
+        quoteResponse.quote.price,
+        (quoteResponse.quote.assetsToInclude || []).map((x: any) => x.asset),
+        tx,
+        wallet,
+        campaignConfig,
       );
 
       tx.setMetadata(0, { t: 'recycle' });
       let ix = 1;
       selectedInputs.forEach((i) => {
-        if (i.unit?.length > 64) {
-          tx.setMetadata(ix, i.unit.slice(0, 56));
-          ix += 1;
-          tx.setMetadata(ix, i.unit.slice(56));
-          ix += 1;
-        } else {
-          tx.setMetadata(ix, i.unit);
-          ix += 1;
-        }
+        ix = setAddressMetadata(tx, ix, i.unit);
       });
       if (availableBP) {
-        tx.setMetadata(ix, availableBP.unit.slice(0, 56));
-        ix += 1;
-        tx.setMetadata(ix, availableBP.unit.slice(56));
-        ix += 1;
+        ix = setAddressMetadata(tx, ix, availableBP.unit);
       }
-      const unsignedTx = await tx.build();
-      const signedTx = await wallet.signTx(unsignedTx);
-      const hash = await wallet.submitTx(signedTx);
+
+      const hash = await submitTx(tx, wallet);
       return hash;
     },
     [availableBP, connected, wallet, status, campaignConfig],
