@@ -168,7 +168,7 @@ export const useRecyclerCampaign = (campaignKey?: string): IUseRecyclerCampaign 
       await sendAssets(
         quoteResponse.quote.fee,
         quoteResponse.quote.price,
-        (quoteResponse.quote.assetsToInclude || []).map((x: any) => x.asset),
+        quoteResponse.quote.assetsToInclude,
         tx,
         wallet,
         campaignConfig,
