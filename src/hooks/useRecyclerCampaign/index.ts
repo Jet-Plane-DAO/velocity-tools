@@ -4,6 +4,7 @@ import { useWallet } from '@meshsdk/react';
 import { LOVELACE_MULTIPLIER } from '../../helpers/ada';
 import { useCampaignAssets } from '../useCampaignAssets';
 import { sendAssets, setAddressMetadata, submitTx } from '../../helpers/tx';
+import { isPolicyOffChain } from '../../helpers/offchain';
 
 type IUseRecyclerCampaign = {
   check: () => void;
@@ -152,7 +153,8 @@ export const useRecyclerCampaign = (campaignKey?: string): IUseRecyclerCampaign 
       }
 
       for (const i of selectedInputs) {
-        const input = campaignConfig!.inputs.find(
+        if (!i?.policyId?.length || isPolicyOffChain(i.policyId)) continue;
+        const input = campaignConfig?.inputs?.find(
           (x: any) => x.policyId === i.policyId,
         );
         if (!input) throw new Error('Input not found');
