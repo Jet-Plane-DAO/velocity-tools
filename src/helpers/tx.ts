@@ -1,4 +1,4 @@
-import { BrowserWallet, Transaction, keepRelevant } from '@meshsdk/core';
+import { Asset, BrowserWallet, Transaction, keepRelevant } from '@meshsdk/core';
 import { LOVELACE_MULTIPLIER } from './ada';
 
 const debug = process.env.NEXT_PUBLIC_ENABLE_DEBUG === 'true';
@@ -70,26 +70,21 @@ export const sendAssets = async (
     );
   }
 
-  if (nativeTokenAmount > 0) {
-    if (debug) console.log(`[send token]`, `${nativeTokenAmount}`);
-    tx.sendAssets({ address: campaignConfig.walletAddress }, [
-      {
-        unit: campaignConfig.tokenAssetName,
-        quantity: `${nativeTokenAmount}`,
-      },
-    ]);
-  }
+  if (nativeTokenAmount > 0 || assetUnits?.length) {
+    const assets: Asset[] = [
+      ...assetUnits.map((a: any) => ({ unit: a, quantity: '1' })),
+      ...(nativeTokenAmount > 0
+        ? [{ unit: campaignConfig.tokenAssetName, quantity: `${nativeTokenAmount}` }]
+        : []),
+    ];
 
-  if (assetUnits?.length) {
-    assetUnits.map((a: any) => {
-      if (debug) console.log(`[send ${a}]`, `1`);
-      return tx.sendAssets({ address: campaignConfig.walletAddress }, [
-        {
-          unit: a,
-          quantity: `1`,
-        },
-      ]);
-    });
+    if (nativeTokenAmount > 0 && debug) {
+      console.log(`[send token]`, `${nativeTokenAmount}`);
+    }
+    if (assetUnits?.length && debug) {
+      if (debug) assetUnits.map((a) => console.log(`[send ${a}]`, `1`));
+    }
+    tx.sendAssets({ address: campaignConfig.walletAddress }, [assets]);
   }
 };
 
