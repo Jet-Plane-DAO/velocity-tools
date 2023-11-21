@@ -178,9 +178,17 @@ export const useRecyclerCampaign = (campaignKey?: string): IUseRecyclerCampaign 
 
       tx.setMetadata(0, { t: 'recycle' });
       let ix = 1;
+
       selectedInputs.forEach((i) => {
         ix = setAddressMetadata(tx, ix, i.unit);
       });
+
+      recycleUnits
+        .filter((x) => isPolicyOffChain(x))
+        .forEach((i) => {
+          ix = setAddressMetadata(tx, ix, i);
+        });
+
       if (availableBP) {
         ix = setAddressMetadata(tx, ix, availableBP.unit);
       }
