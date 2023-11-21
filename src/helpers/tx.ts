@@ -71,12 +71,15 @@ export const sendAssets = async (
   }
 
   if (nativeTokenAmount > 0 || assetUnits?.length) {
-    const assets: Asset[] = [
-      ...assetUnits.map((a: any) => ({ unit: a, quantity: '1' })),
-      ...(nativeTokenAmount > 0
-        ? [{ unit: campaignConfig.tokenAssetName, quantity: `${nativeTokenAmount}` }]
-        : []),
-    ];
+    const assets: Asset[] = assetUnits.map((a: any) => ({ unit: a, quantity: '1' }));
+
+    if (nativeTokenAmount > 0)
+      assets.push({
+        unit: campaignConfig.tokenAssetName,
+        quantity: `${nativeTokenAmount}`,
+      });
+
+    console.log(assets);
 
     if (nativeTokenAmount > 0 && debug) {
       console.log(`[send token]`, `${nativeTokenAmount}`);
@@ -84,7 +87,8 @@ export const sendAssets = async (
     if (assetUnits?.length && debug) {
       if (debug) assetUnits.map((a) => console.log(`[send ${a}]`, `1`));
     }
-    tx.sendAssets({ address: campaignConfig.walletAddress }, [assets]);
+    if (assets.length)
+      tx.sendAssets({ address: campaignConfig.walletAddress }, assets);
   }
 };
 
