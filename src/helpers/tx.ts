@@ -1,7 +1,7 @@
 import { Asset, BrowserWallet, Transaction, keepRelevant } from '@meshsdk/core';
 import { LOVELACE_MULTIPLIER } from './ada';
 
-const MIN_ADA_TO_RETURN = 1500000;
+const MIN_ADA_TO_RETURN = 3000000;
 
 const debug = process.env.NEXT_PUBLIC_ENABLE_DEBUG === 'true';
 
