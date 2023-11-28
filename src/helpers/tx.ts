@@ -1,6 +1,8 @@
 import { Asset, BrowserWallet, Transaction, keepRelevant } from '@meshsdk/core';
 import { LOVELACE_MULTIPLIER } from './ada';
 
+const MIN_ADA_TO_RETURN = 1500000;
+
 const debug = process.env.NEXT_PUBLIC_ENABLE_DEBUG === 'true';
 
 export const logConfig = (config: any) => {
@@ -33,8 +35,14 @@ export const sendAssets = async (
 
   if (adaAmount > 0) {
     if (debug)
-      console.log('[set lovelace]', `${adaAmount * LOVELACE_MULTIPLIER + 200000}`);
-    assetMap.set('lovelace', `${adaAmount * LOVELACE_MULTIPLIER + 200000}`);
+      console.log(
+        '[set lovelace]',
+        `${adaAmount * LOVELACE_MULTIPLIER + MIN_ADA_TO_RETURN}`,
+      );
+    assetMap.set(
+      'lovelace',
+      `${adaAmount * LOVELACE_MULTIPLIER + MIN_ADA_TO_RETURN}`,
+    );
   } else {
     if (debug) console.log('[set lovelace]', `${2 * LOVELACE_MULTIPLIER}`);
     assetMap.set('lovelace', `${2 * LOVELACE_MULTIPLIER}`);
@@ -55,7 +63,9 @@ export const sendAssets = async (
   const relevant = keepRelevant(
     assetMap,
     utxos,
-    adaAmount > 0 ? `${adaAmount * LOVELACE_MULTIPLIER + 200000}` : '2000000',
+    adaAmount > 0
+      ? `${adaAmount * LOVELACE_MULTIPLIER + MIN_ADA_TO_RETURN}`
+      : `${MIN_ADA_TO_RETURN}`,
   );
 
   const inputs = relevant?.length ? relevant : utxos;
