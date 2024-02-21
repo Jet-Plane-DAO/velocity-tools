@@ -79,7 +79,10 @@ export enum CraftingStatusEnum {
  *      )
  *    }
  */
-export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign => {
+export const useCraftingCampaign = (
+  campaignKey?: string,
+  tag?: string,
+): IUseCraftingCampaign => {
   const { craftingData, setCraftingData, availableBP } = useCampaignAssets();
   const [status, setStatus] = useState<CraftingStatusEnum>(CraftingStatusEnum.INIT);
   const [campaignConfig, setConfigData] = useState<any | null>(null);
@@ -107,6 +110,7 @@ export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign 
               includeItems
                 ? `?${new URLSearchParams({
                     includeItems: 'true',
+                    tag: tag || '',
                   }).toString()}`
                 : ''
             }`,
@@ -155,6 +159,7 @@ export const useCraftingCampaign = (campaignKey?: string): IUseCraftingCampaign 
           planId,
           type: 'craft',
           concurrent,
+          tag: tag || '',
         }),
       },
     );
