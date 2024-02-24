@@ -3,7 +3,12 @@ import { Transaction, keepRelevant } from '@meshsdk/core';
 import { useWallet } from '@meshsdk/react';
 import { LOVELACE_MULTIPLIER } from '../../helpers/ada';
 import { useCampaignAssets } from '../useCampaignAssets';
-import { sendAssets, setAddressMetadata, submitTx } from '../../helpers/tx';
+import {
+  getNativeTokenAsset,
+  sendAssets,
+  setAddressMetadata,
+  submitTx,
+} from '../../helpers/tx';
 import { isPolicyOffChain } from '../../helpers/offchain';
 
 type IUseRecyclerCampaign = {
@@ -167,13 +172,17 @@ export const useRecyclerCampaign = (campaignKey?: string): IUseRecyclerCampaign 
       if (!quoteResponse?.quote) throw new Error('Quote not found');
 
       const tx = new Transaction({ initiator: wallet });
+
+      const nativeTokenAsset = campaignConfig.nativeTokenAsset; // getNativeTokenAsset(campaignConfig, craft.plan);
+
       await sendAssets(
         quoteResponse.quote.fee,
         quoteResponse.quote.price,
         quoteResponse.quote.assetsToInclude,
         tx,
         wallet,
-        campaignConfig,
+        campaignConfig.walletAddress,
+        nativeTokenAsset,
       );
 
       tx.setMetadata(0, { t: 'recycle' });

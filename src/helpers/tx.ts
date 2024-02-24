@@ -21,13 +21,22 @@ export const logTx = (tx: any) => {
   } catch (error) {}
 };
 
+export const getNativeTokenAsset = (campaignConfig: any, plan: any) => {
+  return plan.craftCurrency?.length > 0
+    ? campaignConfig?.inputs?.find(
+        (x: any) => x.id === plan.craftCurrency.split('/').pop(),
+      )?.assetId
+    : campaignConfig?.nativeTokenAsset;
+};
+
 export const sendAssets = async (
   adaAmount: number,
   nativeTokenAmount: number,
   assetUnits: string[],
   tx: Transaction,
   wallet: BrowserWallet,
-  campaignConfig: any,
+  walletAddress: string,
+  nativeTokenAsset: string,
 ) => {
   const utxos = await wallet.getUtxos();
 
@@ -50,7 +59,7 @@ export const sendAssets = async (
 
   if (nativeTokenAmount > 0) {
     if (debug) console.log('[set token]', `${nativeTokenAmount}`);
-    assetMap.set(campaignConfig.tokenAssetName, `${nativeTokenAmount}`);
+    assetMap.set(nativeTokenAsset, `${nativeTokenAmount}`);
   }
 
   if (assetUnits?.length) {
@@ -75,7 +84,7 @@ export const sendAssets = async (
   if (adaAmount > 0) {
     if (debug) console.log(`[send lovelace]`, `${adaAmount * LOVELACE_MULTIPLIER}`);
     tx.sendLovelace(
-      { address: campaignConfig.walletAddress },
+      { address: walletAddress },
       `${adaAmount * LOVELACE_MULTIPLIER}`,
     );
   }
@@ -85,7 +94,7 @@ export const sendAssets = async (
 
     if (nativeTokenAmount > 0)
       assets.push({
-        unit: campaignConfig.tokenAssetName,
+        unit: nativeTokenAsset,
         quantity: `${nativeTokenAmount}`,
       });
 
@@ -95,8 +104,7 @@ export const sendAssets = async (
     if (assetUnits?.length && debug) {
       if (debug) assetUnits.map((a) => console.log(`[send ${a}]`, `1`));
     }
-    if (assets.length)
-      tx.sendAssets({ address: campaignConfig.walletAddress }, assets);
+    if (assets.length) tx.sendAssets({ address: walletAddress }, assets);
   }
 };
 

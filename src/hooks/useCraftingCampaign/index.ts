@@ -5,6 +5,7 @@ import { useCampaignAssets } from '../useCampaignAssets';
 import PropTypes from 'prop-types';
 import { isPolicyOffChain } from '../..';
 import {
+  getNativeTokenAsset,
   logConfig,
   sendAssets,
   setAddressMetadata,
@@ -207,13 +208,16 @@ export const useCraftingCampaign = (
 
       const tx = new Transaction({ initiator: wallet });
 
+      const nativeTokenAsset = getNativeTokenAsset(campaignConfig, plan);
+
       await sendAssets(
-        quoteResponse.quote.fee,
+        quoteResponse.quote.time === 0 ? quoteResponse.quote.fee : 0,
         quoteResponse.quote.price,
         (quoteResponse.quote.assetsToInclude || []).map((x: any) => x.asset),
         tx,
         wallet,
-        campaignConfig,
+        campaignConfig.walletAddress,
+        nativeTokenAsset,
       );
 
       tx.setMetadata(0, { t: 'craft', p: planId, c: concurrent });
@@ -244,7 +248,18 @@ export const useCraftingCampaign = (
       if (!craft) throw new Error('Craft not found');
 
       const tx = new Transaction({ initiator: wallet });
-      await sendAssets(craft.quote.fee, 0, [], tx, wallet, campaignConfig);
+
+      const nativeTokenAsset = getNativeTokenAsset(campaignConfig, craft.plan);
+
+      await sendAssets(
+        craft.quote.fee,
+        0,
+        [],
+        tx,
+        wallet,
+        campaignConfig.walletAddress,
+        nativeTokenAsset,
+      );
       tx.setMetadata(0, { t: 'claim', cid: craftId });
 
       await submitTx(tx, wallet);
@@ -257,19 +272,16 @@ export const useCraftingCampaign = (
 
   const upgrade = useCallback(
     async (upgradeUnits: string[]) => {
-      if (!connected) {
-        throw new Error('Wallet not connected');
-      }
-      setStatus(CraftingStatusEnum.UPGRADING);
-
-      const tx = new Transaction({ initiator: wallet });
-      await sendAssets(10, 0, upgradeUnits, tx, wallet, campaignConfig);
-      tx.setMetadata(0, { t: 'upgrade' });
-
-      const hash = await submitTx(tx, wallet);
-
-      setStatus(CraftingStatusEnum.UPGRADE_PENDING);
-      return hash;
+      // if (!connected) {
+      //   throw new Error('Wallet not connected');
+      // }
+      // setStatus(CraftingStatusEnum.UPGRADING);
+      // const tx = new Transaction({ initiator: wallet });
+      // await sendAssets(10, 0, upgradeUnits, tx, wallet, campaignConfig);
+      // tx.setMetadata(0, { t: 'upgrade' });
+      // const hash = await submitTx(tx, wallet);
+      // setStatus(CraftingStatusEnum.UPGRADE_PENDING);
+      // return hash;
     },
     [connected, wallet, status, campaignConfig, craftingData],
   );

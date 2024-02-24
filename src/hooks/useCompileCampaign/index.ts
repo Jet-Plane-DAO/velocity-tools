@@ -4,7 +4,12 @@ import { useWallet } from '@meshsdk/react';
 import { useCampaignAssets } from '../useCampaignAssets';
 import PropTypes from 'prop-types';
 import { isPolicyOffChain } from '../../helpers/offchain';
-import { sendAssets, setAddressMetadata, submitTx } from '../../helpers/tx';
+import {
+  getNativeTokenAsset,
+  sendAssets,
+  setAddressMetadata,
+  submitTx,
+} from '../../helpers/tx';
 import { fetchCheck, fetchQuote } from '../../helpers/quote';
 
 type IUseCompileCampaign = {
@@ -138,13 +143,17 @@ export const useCompileCampaign = (campaignKey?: string): IUseCompileCampaign =>
       if (!quoteResponse?.quote) throw new Error('Quote not found');
 
       const tx = new Transaction({ initiator: wallet });
+
+      const nativeTokenAsset = getNativeTokenAsset(campaignConfig, plan);
+
       await sendAssets(
         quoteResponse.quote.fee,
         quoteResponse.quote.price,
         (quoteResponse.quote.assetsToInclude || []).map((x: any) => x.asset),
         tx,
         wallet,
-        campaignConfig,
+        campaignConfig.walletAddress,
+        nativeTokenAsset,
       );
 
       tx.setMetadata(0, { t: 'compile', p: planId, c: concurrent });
