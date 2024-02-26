@@ -108,7 +108,7 @@ export const useCraftingCampaign = (
             `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${
               campaignKey || process.env.NEXT_PUBLIC_VELOCITY_CRAFTING_CAMPAIGN_NAME
             }/check/${stakeKey}${
-              includeItems || tag
+              includeItems || tag?.length || 0 > 0
                 ? `?${new URLSearchParams({
                     includeItems: `${includeItems}`,
                     tag: tag || '',

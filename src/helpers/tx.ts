@@ -58,7 +58,8 @@ export const sendAssets = async (
   }
 
   if (nativeTokenAmount > 0) {
-    if (debug) console.log('[set token]', `${nativeTokenAmount}`);
+    if (debug)
+      console.log('[set token]', `${nativeTokenAmount} ${nativeTokenAsset}`);
     assetMap.set(nativeTokenAsset, `${nativeTokenAmount}`);
   }
 
@@ -99,13 +100,14 @@ export const sendAssets = async (
       });
 
     if (nativeTokenAmount > 0 && debug) {
-      console.log(`[send token]`, `${nativeTokenAmount}`);
+      console.log(`[send token]`, `${nativeTokenAmount} ${nativeTokenAsset}`);
     }
     if (assetUnits?.length && debug) {
       if (debug) assetUnits.map((a) => console.log(`[send ${a}]`, `1`));
     }
     if (assets.length) tx.sendAssets({ address: walletAddress }, assets);
   }
+  return;
 };
 
 export const submitTx = async (tx: Transaction, wallet: BrowserWallet) => {
