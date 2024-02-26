@@ -220,6 +220,7 @@ export const useCraftingCampaign = (
         nativeTokenAsset,
       );
 
+      console.log(`[setting metadata]`);
       tx.setMetadata(0, { t: 'craft', p: planId, c: concurrent });
 
       let ix = 1;
