@@ -182,7 +182,7 @@ export const useCraftingCampaign = (
       planId: string,
       selectedInputs: any[],
       concurrent: number = 1,
-      tokenSplit = 0,
+      tokenSplit: number = 0,
     ) => {
       logConfig({
         campaignConfig,

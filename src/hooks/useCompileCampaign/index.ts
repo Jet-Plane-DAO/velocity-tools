@@ -126,7 +126,7 @@ export const useCompileCampaign = (campaignKey?: string): IUseCompileCampaign =>
       planId: string,
       selectedInputs: any[],
       concurrent: number = 1,
-      tokenSplit = 0,
+      tokenSplit: number = 0,
     ) => {
       if (!connected) {
         throw new Error('Wallet not connected');

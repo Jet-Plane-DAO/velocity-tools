@@ -173,7 +173,7 @@ export const useMintCampaign = (campaignKey?: string): IUseMintCampaign => {
       planId: string,
       selectedInputs: any[],
       concurrent: number = 1,
-      tokenSplit = 0,
+      tokenSplit: number = 0,
     ) => {
       if (!connected) {
         throw new Error('Wallet not connected');
