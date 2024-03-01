@@ -122,7 +122,12 @@ export const useCompileCampaign = (campaignKey?: string): IUseCompileCampaign =>
   };
 
   const compile = useCallback(
-    async (planId: string, selectedInputs: any[], concurrent: number = 1) => {
+    async (
+      planId: string,
+      selectedInputs: any[],
+      concurrent: number = 1,
+      tokenSplit = 0,
+    ) => {
       if (!connected) {
         throw new Error('Wallet not connected');
       }
@@ -141,6 +146,7 @@ export const useCompileCampaign = (campaignKey?: string): IUseCompileCampaign =>
         planId,
         selectedInputs.map((i) => i.unit),
         concurrent,
+        tokenSplit,
       );
       if (!quoteResponse?.quote) throw new Error('Quote not found');
 

@@ -169,7 +169,12 @@ export const useMintCampaign = (campaignKey?: string): IUseMintCampaign => {
   };
 
   const mint = useCallback(
-    async (planId: string, selectedInputs: any[], concurrent: number = 1) => {
+    async (
+      planId: string,
+      selectedInputs: any[],
+      concurrent: number = 1,
+      tokenSplit = 0,
+    ) => {
       if (!connected) {
         throw new Error('Wallet not connected');
       }
@@ -188,6 +193,7 @@ export const useMintCampaign = (campaignKey?: string): IUseMintCampaign => {
         planId,
         selectedInputs.map((i) => i.unit),
         concurrent,
+        tokenSplit,
       );
       if (!quoteResponse?.quote) throw new Error('Quote not found');
 

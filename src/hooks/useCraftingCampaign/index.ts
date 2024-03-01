@@ -178,7 +178,12 @@ export const useCraftingCampaign = (
   };
 
   const craft = useCallback(
-    async (planId: string, selectedInputs: any[], concurrent: number = 1) => {
+    async (
+      planId: string,
+      selectedInputs: any[],
+      concurrent: number = 1,
+      tokenSplit = 0,
+    ) => {
       logConfig({
         campaignConfig,
         craftingData,
@@ -204,6 +209,7 @@ export const useCraftingCampaign = (
         planId,
         (selectedInputs || []).map((i) => i.unit),
         concurrent,
+        tokenSplit,
       );
 
       if (!quoteResponse?.quote) throw new Error('Quote not found');
