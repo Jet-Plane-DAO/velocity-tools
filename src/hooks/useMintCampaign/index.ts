@@ -131,6 +131,7 @@ export const useMintCampaign = (campaignKey?: string): IUseMintCampaign => {
     planId: string,
     inputUnits: string[],
     concurrent: number = 1,
+    tokenSplit: number = 0,
   ) => {
     const requestHeaders: HeadersInit = new Headers();
     requestHeaders.set(
@@ -152,6 +153,7 @@ export const useMintCampaign = (campaignKey?: string): IUseMintCampaign => {
           planId,
           type: 'craft',
           concurrent,
+          tokenSplit,
         }),
       },
     );

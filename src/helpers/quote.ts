@@ -35,6 +35,7 @@ export const fetchQuote = async (
   campaignType: string,
   availableBP?: any,
   campaignKey?: string,
+  tokenSplit: number = 0,
 ) => {
   const requestHeaders: HeadersInit = new Headers();
   requestHeaders.set(
@@ -56,6 +57,7 @@ export const fetchQuote = async (
         planId,
         type: campaignType,
         concurrent,
+        tokenSplit,
       }),
     },
   );

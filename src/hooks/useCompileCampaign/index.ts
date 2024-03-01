@@ -108,6 +108,7 @@ export const useCompileCampaign = (campaignKey?: string): IUseCompileCampaign =>
     planId: string,
     inputUnits: string[],
     concurrent: number = 1,
+    tokenSplit: number = 0,
   ) => {
     return await fetchQuote(
       planId,
@@ -116,6 +117,7 @@ export const useCompileCampaign = (campaignKey?: string): IUseCompileCampaign =>
       'compile',
       availableBP,
       campaignKey,
+      tokenSplit,
     );
   };
 
