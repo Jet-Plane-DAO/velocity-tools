@@ -29,6 +29,9 @@ export const getNativeTokenAsset = (campaignConfig: any, plan: any) => {
     : campaignConfig?.nativeTokenAsset;
 };
 
+export const noAssetsAdaAmount = (q: any) =>
+  (q.assetsToInclude || []).length === 0 && q.price === 0 ? 1 : 0;
+
 export const sendAssets = async (
   adaAmount: number,
   nativeTokenAmount: number,

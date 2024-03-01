@@ -7,6 +7,7 @@ import { isPolicyOffChain } from '../..';
 import {
   getNativeTokenAsset,
   logConfig,
+  noAssetsAdaAmount,
   sendAssets,
   setAddressMetadata,
   submitTx,
@@ -219,7 +220,9 @@ export const useCraftingCampaign = (
       const nativeTokenAsset = getNativeTokenAsset(campaignConfig, plan);
 
       await sendAssets(
-        quoteResponse.quote.time === 0 ? quoteResponse.quote.fee : 0,
+        quoteResponse.quote.time === 0
+          ? quoteResponse.quote.fee
+          : noAssetsAdaAmount(quoteResponse.quote),
         quoteResponse.quote.price,
         (quoteResponse.quote.assetsToInclude || []).map((x: any) => x.asset),
         tx,
@@ -229,7 +232,7 @@ export const useCraftingCampaign = (
       );
 
       console.log(`[setting metadata]`);
-      tx.setMetadata(0, { t: 'craft', p: planId, c: concurrent });
+      tx.setMetadata(0, { t: 'craft', p: planId, c: concurrent, s: tokenSplit });
 
       let ix = 1;
       selectedInputs.forEach((i) => {

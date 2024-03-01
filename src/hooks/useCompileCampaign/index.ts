@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import { isPolicyOffChain } from '../../helpers/offchain';
 import {
   getNativeTokenAsset,
+  noAssetsAdaAmount,
   sendAssets,
   setAddressMetadata,
   submitTx,
@@ -155,7 +156,9 @@ export const useCompileCampaign = (campaignKey?: string): IUseCompileCampaign =>
       const nativeTokenAsset = getNativeTokenAsset(campaignConfig, plan);
 
       await sendAssets(
-        quoteResponse.quote.fee,
+        quoteResponse.quote.time === 0
+          ? quoteResponse.quote.fee
+          : noAssetsAdaAmount(quoteResponse.quote),
         quoteResponse.quote.price,
         (quoteResponse.quote.assetsToInclude || []).map((x: any) => x.asset),
         tx,
@@ -164,7 +167,7 @@ export const useCompileCampaign = (campaignKey?: string): IUseCompileCampaign =>
         nativeTokenAsset,
       );
 
-      tx.setMetadata(0, { t: 'compile', p: planId, c: concurrent });
+      tx.setMetadata(0, { t: 'compile', p: planId, c: concurrent, s: tokenSplit });
       let ix = 1;
       selectedInputs.forEach((i) => {
         ix = setAddressMetadata(tx, ix, i.unit);
