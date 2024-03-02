@@ -1,5 +1,6 @@
 import { Asset, BrowserWallet, Transaction, keepRelevant } from '@meshsdk/core';
 import { LOVELACE_MULTIPLIER } from './ada';
+import { isPolicyOffChain } from './offchain';
 
 const MIN_ADA_TO_RETURN = 1500000;
 
@@ -31,6 +32,28 @@ export const getNativeTokenAsset = (campaignConfig: any, plan: any) => {
 
 export const noAssetsAdaAmount = (q: any) =>
   (q.assetsToInclude || []).length === 0 && q.price === 0 ? 1 : 0;
+
+export const validatePlan = (
+  connected: boolean,
+  campaignConfig: any,
+  planId: string,
+  selectedInputs: any[],
+) => {
+  if (!connected) {
+    throw new Error('Wallet not connected');
+  }
+  const plan = campaignConfig!.plans.find((p: any) => p.id === planId);
+  if (!plan) throw new Error('Plan not found');
+
+  for (const i of selectedInputs) {
+    if (!i?.policyId?.length || isPolicyOffChain(i.policyId)) continue;
+    const input = campaignConfig?.inputs?.find(
+      (x: any) => x.policyId === i.policyId,
+    );
+    if (!input) throw new Error('Input not found');
+  }
+  return plan;
+};
 
 export const sendAssets = async (
   adaAmount: number,

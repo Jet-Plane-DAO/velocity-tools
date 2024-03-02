@@ -3,13 +3,14 @@ import { Transaction } from '@meshsdk/core';
 import { useWallet } from '@meshsdk/react';
 import { useCampaignAssets } from '../useCampaignAssets';
 import PropTypes from 'prop-types';
-import { isPolicyOffChain } from '../../helpers/offchain';
 import {
   getNativeTokenAsset,
+  logConfig,
   noAssetsAdaAmount,
   sendAssets,
   setAddressMetadata,
   submitTx,
+  validatePlan,
 } from '../../helpers/tx';
 import { fetchCheck, fetchQuote } from '../../helpers/quote';
 
@@ -80,7 +81,10 @@ export enum CompileStatusEnum {
  *    }
  */
 
-export const useCompileCampaign = (campaignKey?: string): IUseCompileCampaign => {
+export const useCompileCampaign = (
+  campaignKey?: string,
+  tag?: string,
+): IUseCompileCampaign => {
   const { craftingData, setCraftingData, availableBP } = useCampaignAssets();
   const [status, setStatus] = useState<CompileStatusEnum>(CompileStatusEnum.INIT);
   const [campaignConfig, setConfigData] = useState<any | null>(null);
@@ -95,7 +99,7 @@ export const useCompileCampaign = (campaignKey?: string): IUseCompileCampaign =>
         setStatus(CompileStatusEnum.CHECKING);
         const addresses = await wallet.getRewardAddresses();
         const stakeKey = addresses[0];
-        const quote = await fetchCheck(stakeKey, includeItems, campaignKey);
+        const quote = await fetchCheck(stakeKey, includeItems, campaignKey, tag);
         setCraftingData(quote?.status || { mints: [] });
         setConfigData(quote.config);
         setStatus(CompileStatusEnum.READY);
@@ -129,20 +133,15 @@ export const useCompileCampaign = (campaignKey?: string): IUseCompileCampaign =>
       concurrent: number = 1,
       tokenSplit: number = 0,
     ) => {
-      if (!connected) {
-        throw new Error('Wallet not connected');
-      }
-      const plan = campaignConfig!.plans.find((p: any) => p.id === planId);
-      if (!plan) throw new Error('Plan not found');
+      logConfig({
+        campaignConfig,
+        craftingData,
+        availableBP,
+        connected,
+        status,
+      });
 
-      for (const i of selectedInputs) {
-        if (!i?.policyId?.length || isPolicyOffChain(i.policyId)) continue;
-        const input = campaignConfig?.inputs?.find(
-          (x: any) => x.policyId === i.policyId,
-        );
-        if (!input) throw new Error('Input not found');
-      }
-
+      const plan = validatePlan(connected, campaignConfig, planId, selectedInputs);
       const quoteResponse = await quote(
         planId,
         selectedInputs.map((i) => i.unit),
@@ -173,6 +172,7 @@ export const useCompileCampaign = (campaignKey?: string): IUseCompileCampaign =>
         c: concurrent,
         s: `${tokenSplit}`,
       });
+
       let ix = 1;
       selectedInputs.forEach((i) => {
         ix = setAddressMetadata(tx, ix, i.unit);

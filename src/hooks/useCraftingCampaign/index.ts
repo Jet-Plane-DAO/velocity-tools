@@ -3,7 +3,6 @@ import { Transaction } from '@meshsdk/core';
 import { useWallet } from '@meshsdk/react';
 import { useCampaignAssets } from '../useCampaignAssets';
 import PropTypes from 'prop-types';
-import { isPolicyOffChain } from '../..';
 import {
   getNativeTokenAsset,
   logConfig,
@@ -11,14 +10,16 @@ import {
   sendAssets,
   setAddressMetadata,
   submitTx,
+  validatePlan,
 } from '../../helpers/tx';
+import { fetchCheck, fetchQuote } from '../../helpers/quote';
 
 type IUseCraftingCampaign = {
   check: (includeItems?: boolean) => void;
   craft: (planId: string, input: any[], concurrent: number) => Promise<string>;
   claim: (craftId: string) => Promise<string>;
   quote: (planId: string, inputUnits: string[], concurrent: number) => Promise<any>;
-  upgrade: (upgradeUnits: string[]) => Promise<any>;
+  // upgrade: (upgradeUnits: string[]) => Promise<any>;
   campaignConfig: any;
   craftingData: any;
   availableBP: any;
@@ -88,49 +89,22 @@ export const useCraftingCampaign = (
   const { craftingData, setCraftingData, availableBP } = useCampaignAssets();
   const [status, setStatus] = useState<CraftingStatusEnum>(CraftingStatusEnum.INIT);
   const [campaignConfig, setConfigData] = useState<any | null>(null);
-  const [quoteData, setQuoteData] = useState<any | null>(null);
   const { wallet, connected } = useWallet();
 
   const check = useCallback(
-    (includeItems?: boolean) => {
+    async (includeItems?: boolean) => {
       if (!connected) {
         throw new Error('Wallet not connected');
       }
       if (status === CraftingStatusEnum.INIT) {
         setStatus(CraftingStatusEnum.CHECKING);
-        wallet.getRewardAddresses().then((addresses: any) => {
-          const stakeKey = addresses[0];
-          const requestHeaders: HeadersInit = new Headers();
-          requestHeaders.set(
-            'jetplane-api-key',
-            process.env.NEXT_PUBLIC_VELOCITY_API_KEY ?? '',
-          );
-          fetch(
-            `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${
-              campaignKey || process.env.NEXT_PUBLIC_VELOCITY_CRAFTING_CAMPAIGN_NAME
-            }/check/${stakeKey}${
-              includeItems || tag?.length || 0 > 0
-                ? `?${new URLSearchParams({
-                    includeItems: `${includeItems}`,
-                    tag: tag || '',
-                  }).toString()}`
-                : ''
-            }`,
-            { headers: requestHeaders },
-          ).then(async (res) => {
-            if (res.status === 200) {
-              const data = await res.json();
-              setCraftingData(data?.status || { crafts: [], mints: [], locked: [] });
-              setConfigData(data.config);
-              setStatus(CraftingStatusEnum.READY);
-            } else {
-              const data = await res.json();
-              setConfigData(data.config);
-              setStatus(CraftingStatusEnum.READY);
-            }
-            return;
-          });
-        });
+        const addresses = await wallet.getRewardAddresses();
+        const stakeKey = addresses[0];
+        const quote = await fetchCheck(stakeKey, includeItems, campaignKey, tag);
+        setCraftingData(quote?.status || { mints: [] });
+        setConfigData(quote.config);
+        setStatus(CraftingStatusEnum.READY);
+        return;
       }
     },
     [connected, wallet],
@@ -142,40 +116,15 @@ export const useCraftingCampaign = (
     concurrent: number = 1,
     tokenSplit: number = 0,
   ) => {
-    const requestHeaders: HeadersInit = new Headers();
-    requestHeaders.set(
-      'jetplane-api-key',
-      process.env.NEXT_PUBLIC_VELOCITY_API_KEY ?? '',
+    return await fetchQuote(
+      planId,
+      inputUnits,
+      concurrent,
+      'craft',
+      availableBP,
+      campaignKey,
+      tokenSplit,
     );
-    if (availableBP) {
-      inputUnits.push(availableBP.unit);
-    }
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${
-        campaignKey || process.env.NEXT_PUBLIC_VELOCITY_CRAFTING_CAMPAIGN_NAME
-      }/quote`,
-      {
-        headers: requestHeaders,
-        method: 'post',
-        body: JSON.stringify({
-          inputUnits,
-          planId,
-          type: 'craft',
-          concurrent,
-          tag: tag || '',
-          tokenSplit,
-        }),
-      },
-    );
-    const data = await res.json();
-    if (res.status === 422) {
-      return { status: 'error', message: data.message };
-    }
-    if (res.status === 200) {
-      setQuoteData(data);
-      return { status: 'OK', quote: data };
-    }
-    return quoteData ? { status: 'OK', quote: quoteData } : null;
   };
 
   const craft = useCallback(
@@ -192,27 +141,14 @@ export const useCraftingCampaign = (
         connected,
         status,
       });
-      if (!connected) {
-        throw new Error('Wallet not connected');
-      }
-      const plan = campaignConfig!.plans.find((p: any) => p.id === planId);
-      if (!plan) throw new Error('Plan not found');
 
-      for (const i of selectedInputs) {
-        if (!i?.policyId?.length || isPolicyOffChain(i.policyId)) continue;
-        const input = campaignConfig?.inputs?.find(
-          (x: any) => x.policyId === i.policyId,
-        );
-        if (!input) throw new Error('Input not found');
-      }
-
+      const plan = validatePlan(connected, campaignConfig, planId, selectedInputs);
       const quoteResponse = await quote(
         planId,
         (selectedInputs || []).map((i) => i.unit),
         concurrent,
         tokenSplit,
       );
-
       if (!quoteResponse?.quote) throw new Error('Quote not found');
 
       const tx = new Transaction({ initiator: wallet });
@@ -231,7 +167,6 @@ export const useCraftingCampaign = (
         nativeTokenAsset,
       );
 
-      console.log(`[setting metadata]`);
       tx.setMetadata(0, {
         t: 'craft',
         p: planId,
@@ -287,27 +222,27 @@ export const useCraftingCampaign = (
     [connected, wallet, status, campaignConfig, craftingData],
   );
 
-  const upgrade = useCallback(
-    async (upgradeUnits: string[]) => {
-      // if (!connected) {
-      //   throw new Error('Wallet not connected');
-      // }
-      // setStatus(CraftingStatusEnum.UPGRADING);
-      // const tx = new Transaction({ initiator: wallet });
-      // await sendAssets(10, 0, upgradeUnits, tx, wallet, campaignConfig);
-      // tx.setMetadata(0, { t: 'upgrade' });
-      // const hash = await submitTx(tx, wallet);
-      // setStatus(CraftingStatusEnum.UPGRADE_PENDING);
-      // return hash;
-    },
-    [connected, wallet, status, campaignConfig, craftingData],
-  );
+  // const upgrade = useCallback(
+  //   async (upgradeUnits: string[]) => {
+  //     // if (!connected) {
+  //     //   throw new Error('Wallet not connected');
+  //     // }
+  //     // setStatus(CraftingStatusEnum.UPGRADING);
+  //     // const tx = new Transaction({ initiator: wallet });
+  //     // await sendAssets(10, 0, upgradeUnits, tx, wallet, campaignConfig);
+  //     // tx.setMetadata(0, { t: 'upgrade' });
+  //     // const hash = await submitTx(tx, wallet);
+  //     // setStatus(CraftingStatusEnum.UPGRADE_PENDING);
+  //     // return hash;
+  //   },
+  //   [connected, wallet, status, campaignConfig, craftingData],
+  // );
 
   return {
     check,
     craft,
     claim,
-    upgrade,
+    // upgrade,
     campaignConfig,
     status,
     craftingData,

@@ -3,14 +3,15 @@ import { Transaction } from '@meshsdk/core';
 import { useWallet } from '@meshsdk/react';
 import { useCampaignAssets } from '../useCampaignAssets';
 import PropTypes from 'prop-types';
-import { isPolicyOffChain } from '../../helpers/offchain';
 import {
   getNativeTokenAsset,
   noAssetsAdaAmount,
   sendAssets,
   setAddressMetadata,
   submitTx,
+  validatePlan,
 } from '../../helpers/tx';
+import { fetchCheck, fetchQuote } from '../../helpers/quote';
 
 type IUseMintCampaign = {
   check: (includeItems?: boolean) => void;
@@ -83,7 +84,6 @@ export const useMintCampaign = (campaignKey?: string): IUseMintCampaign => {
   const { craftingData, setCraftingData, availableBP } = useCampaignAssets();
   const [status, setStatus] = useState<MintStatusEnum>(MintStatusEnum.INIT);
   const [campaignConfig, setConfigData] = useState<any | null>(null);
-  const [quoteData, setQuoteData] = useState<any | null>(null);
   const { wallet, connected } = useWallet();
 
   const check = useCallback(
@@ -95,33 +95,10 @@ export const useMintCampaign = (campaignKey?: string): IUseMintCampaign => {
         setStatus(MintStatusEnum.CHECKING);
         const addresses = await wallet.getRewardAddresses();
         const stakeKey = addresses[0];
-        const requestHeaders: HeadersInit = new Headers();
-        requestHeaders.set(
-          'jetplane-api-key',
-          process.env.NEXT_PUBLIC_VELOCITY_API_KEY ?? '',
-        );
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${
-            campaignKey || process.env.NEXT_PUBLIC_VELOCITY_MINTING_CAMPAIGN_NAME
-          }/check/${stakeKey}${
-            includeItems
-              ? `?${new URLSearchParams({
-                  includeItems: 'true',
-                }).toString()}`
-              : ''
-          }`,
-          { headers: requestHeaders },
-        );
-        if (res.status === 200) {
-          const data = await res.json();
-          setCraftingData(data?.status || { crafts: [], mints: [], locked: [] });
-          setConfigData(data.config);
-          setStatus(MintStatusEnum.READY);
-        } else {
-          const data = await res.json();
-          setConfigData(data.config);
-          setStatus(MintStatusEnum.READY);
-        }
+        const quote = await fetchCheck(stakeKey, includeItems, campaignKey);
+        setCraftingData(quote?.status || { crafts: [], mints: [], locked: [] });
+        setConfigData(quote.config);
+        setStatus(MintStatusEnum.READY);
         return;
       }
     },
@@ -134,39 +111,15 @@ export const useMintCampaign = (campaignKey?: string): IUseMintCampaign => {
     concurrent: number = 1,
     tokenSplit: number = 0,
   ) => {
-    const requestHeaders: HeadersInit = new Headers();
-    requestHeaders.set(
-      'jetplane-api-key',
-      process.env.NEXT_PUBLIC_VELOCITY_API_KEY ?? '',
+    return await fetchQuote(
+      planId,
+      inputUnits,
+      concurrent,
+      'mint',
+      availableBP,
+      campaignKey,
+      tokenSplit,
     );
-    if (availableBP) {
-      inputUnits.push(availableBP.unit);
-    }
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${
-        campaignKey || process.env.NEXT_PUBLIC_VELOCITY_MINTING_CAMPAIGN_NAME
-      }/quote`,
-      {
-        headers: requestHeaders,
-        method: 'post',
-        body: JSON.stringify({
-          inputUnits,
-          planId,
-          type: 'craft',
-          concurrent,
-          tokenSplit,
-        }),
-      },
-    );
-    const data = await res.json();
-    if (res.status === 422) {
-      return { status: 'error', message: data.message };
-    }
-    if (res.status === 200) {
-      setQuoteData(data);
-      return { status: 'OK', quote: data };
-    }
-    return quoteData ? { status: 'OK', quote: quoteData } : null;
   };
 
   const mint = useCallback(
@@ -176,26 +129,14 @@ export const useMintCampaign = (campaignKey?: string): IUseMintCampaign => {
       concurrent: number = 1,
       tokenSplit: number = 0,
     ) => {
-      if (!connected) {
-        throw new Error('Wallet not connected');
-      }
-      const plan = campaignConfig!.plans.find((p: any) => p.id === planId);
-      if (!plan) throw new Error('Plan not found');
-
-      for (const i of selectedInputs) {
-        if (!i?.policyId?.length || isPolicyOffChain(i.policyId)) continue;
-        const input = campaignConfig?.inputs?.find(
-          (x: any) => x.policyId === i.policyId,
-        );
-        if (!input) throw new Error('Input not found');
-      }
-
+      const plan = validatePlan(connected, campaignConfig, planId, selectedInputs);
       const quoteResponse = await quote(
         planId,
         selectedInputs.map((i) => i.unit),
         concurrent,
         tokenSplit,
       );
+
       if (!quoteResponse?.quote) throw new Error('Quote not found');
 
       const tx = new Transaction({ initiator: wallet });

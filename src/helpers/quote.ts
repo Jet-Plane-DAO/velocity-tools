@@ -2,6 +2,7 @@ export const fetchCheck = async (
   stakeKey: string,
   includeItems?: boolean,
   campaignKey?: string,
+  tag?: string,
 ) => {
   const requestHeaders: HeadersInit = new Headers();
   requestHeaders.set(
@@ -12,9 +13,10 @@ export const fetchCheck = async (
     `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${
       campaignKey || process.env.NEXT_PUBLIC_VELOCITY_MINTING_CAMPAIGN_NAME
     }/check/${stakeKey}${
-      includeItems
+      includeItems || tag?.length || 0 > 0
         ? `?${new URLSearchParams({
-            includeItems: 'true',
+            includeItems: `${includeItems}`,
+            tag: tag || '',
           }).toString()}`
         : ''
     }`,
