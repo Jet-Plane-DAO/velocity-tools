@@ -213,7 +213,7 @@ export const useMintCampaign = (campaignKey?: string): IUseMintCampaign => {
         nativeTokenAsset,
       );
 
-      tx.setMetadata(0, { t: 'mint', p: planId, c: concurrent, s: tokenSplit });
+      tx.setMetadata(0, { t: 'mint', p: planId, c: concurrent, s: `${tokenSplit}` });
       let ix = 1;
       selectedInputs.forEach((i) => {
         ix = setAddressMetadata(tx, ix, i.unit);

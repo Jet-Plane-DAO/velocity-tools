@@ -232,7 +232,12 @@ export const useCraftingCampaign = (
       );
 
       console.log(`[setting metadata]`);
-      tx.setMetadata(0, { t: 'craft', p: planId, c: concurrent, s: tokenSplit });
+      tx.setMetadata(0, {
+        t: 'craft',
+        p: planId,
+        c: concurrent,
+        s: `${tokenSplit}`,
+      });
 
       let ix = 1;
       selectedInputs.forEach((i) => {

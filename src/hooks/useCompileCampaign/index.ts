@@ -167,7 +167,12 @@ export const useCompileCampaign = (campaignKey?: string): IUseCompileCampaign =>
         nativeTokenAsset,
       );
 
-      tx.setMetadata(0, { t: 'compile', p: planId, c: concurrent, s: tokenSplit });
+      tx.setMetadata(0, {
+        t: 'compile',
+        p: planId,
+        c: concurrent,
+        s: `${tokenSplit}`,
+      });
       let ix = 1;
       selectedInputs.forEach((i) => {
         ix = setAddressMetadata(tx, ix, i.unit);
