@@ -72,15 +72,16 @@ export const sendAssets = async (
     if (debug)
       console.log(
         '[set lovelace]',
-        `${adaAmount * LOVELACE_MULTIPLIER + MIN_ADA_TO_RETURN}`,
+        `${Math.round(adaAmount * LOVELACE_MULTIPLIER + MIN_ADA_TO_RETURN)}`,
       );
     assetMap.set(
       'lovelace',
-      `${adaAmount * LOVELACE_MULTIPLIER + MIN_ADA_TO_RETURN}`,
+      `${Math.round(adaAmount * LOVELACE_MULTIPLIER + MIN_ADA_TO_RETURN)}`,
     );
   } else {
-    if (debug) console.log('[set lovelace]', `${2 * LOVELACE_MULTIPLIER}`);
-    assetMap.set('lovelace', `${2 * LOVELACE_MULTIPLIER}`);
+    if (debug)
+      console.log('[set lovelace]', `${Math.round(2 * LOVELACE_MULTIPLIER)}`);
+    assetMap.set('lovelace', `${Math.round(2 * LOVELACE_MULTIPLIER)}`);
   }
 
   if (nativeTokenAmount > 0) {
@@ -100,7 +101,7 @@ export const sendAssets = async (
     assetMap,
     utxos,
     adaAmount > 0
-      ? `${adaAmount * LOVELACE_MULTIPLIER + MIN_ADA_TO_RETURN}`
+      ? `${Math.round(adaAmount * LOVELACE_MULTIPLIER + MIN_ADA_TO_RETURN)}`
       : `${MIN_ADA_TO_RETURN}`,
   );
 
@@ -109,10 +110,14 @@ export const sendAssets = async (
   tx.setTxInputs(inputs);
 
   if (adaAmount > 0) {
-    if (debug) console.log(`[send lovelace]`, `${adaAmount * LOVELACE_MULTIPLIER}`);
+    if (debug)
+      console.log(
+        `[send lovelace]`,
+        `${Math.round(adaAmount * LOVELACE_MULTIPLIER)}`,
+      );
     tx.sendLovelace(
       { address: walletAddress },
-      `${adaAmount * LOVELACE_MULTIPLIER}`,
+      `${Math.round(adaAmount * LOVELACE_MULTIPLIER)}`,
     );
   }
 
