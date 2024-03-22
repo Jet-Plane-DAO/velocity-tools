@@ -19,7 +19,6 @@ type IUseCraftingCampaign = {
   craft: (planId: string, input: any[], concurrent: number) => Promise<string>;
   claim: (craftId: string) => Promise<string>;
   quote: (planId: string, inputUnits: string[], concurrent: number) => Promise<any>;
-  // upgrade: (upgradeUnits: string[]) => Promise<any>;
   campaignConfig: any;
   craftingData: any;
   availableBP: any;
