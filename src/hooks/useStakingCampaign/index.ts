@@ -92,7 +92,7 @@ export const useStakingCampaign = (): IUseStakingCampaign => {
         });
       });
     }
-  }, [wallet]);
+  }, [wallet, status]);
 
   const register = useCallback(async () => {
     if (status !== StakingStatusEnum.UNSTAKED) return;

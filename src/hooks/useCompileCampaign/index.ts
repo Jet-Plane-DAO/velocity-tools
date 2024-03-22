@@ -96,6 +96,7 @@ export const useCompileCampaign = (
         throw new Error('Wallet not connected');
       }
       if (status === CompileStatusEnum.INIT) {
+        if (!wallet) return;
         setStatus(CompileStatusEnum.CHECKING);
         const addresses = await wallet.getRewardAddresses();
         const stakeKey = addresses[0];
@@ -106,7 +107,7 @@ export const useCompileCampaign = (
         return;
       }
     },
-    [connected, wallet],
+    [connected, wallet, status],
   );
 
   const quote = async (

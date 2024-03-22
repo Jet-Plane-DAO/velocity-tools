@@ -102,7 +102,7 @@ export const useMintCampaign = (campaignKey?: string): IUseMintCampaign => {
         return;
       }
     },
-    [connected, wallet],
+    [connected, wallet, status],
   );
 
   const quote = async (

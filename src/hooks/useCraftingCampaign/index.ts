@@ -97,6 +97,7 @@ export const useCraftingCampaign = (
         throw new Error('Wallet not connected');
       }
       if (status === CraftingStatusEnum.INIT) {
+        if (!wallet) return;
         setStatus(CraftingStatusEnum.CHECKING);
         const addresses = await wallet.getRewardAddresses();
         const stakeKey = addresses[0];
@@ -107,7 +108,7 @@ export const useCraftingCampaign = (
         return;
       }
     },
-    [connected, wallet],
+    [connected, wallet, status],
   );
 
   const quote = async (
