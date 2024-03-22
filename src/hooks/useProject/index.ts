@@ -37,26 +37,23 @@ export const useProject = (): IUseProject => {
     return data;
   }, []);
 
-  const activity = useCallback(
-    async (forWallet = false) => {
-      const stakeKey = forWallet ? await wallet.getRewardAddresses() : null;
-      const requestHeaders: HeadersInit = new Headers();
-      requestHeaders.set(
-        'jetplane-api-key',
-        process.env.NEXT_PUBLIC_VELOCITY_API_KEY ?? '',
-      );
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_VELOCITY_API}/activity${
-          stakeKey ? `/${stakeKey[0]}` : ''
-        }`,
-        { headers: requestHeaders },
-      );
-      const data = await res.json();
-      setIsFetching(false);
-      return data;
-    },
-    [connected, wallet],
-  );
+  const activity = async (forWallet = false) => {
+    const stakeKey = forWallet ? await wallet.getRewardAddresses() : null;
+    const requestHeaders: HeadersInit = new Headers();
+    requestHeaders.set(
+      'jetplane-api-key',
+      process.env.NEXT_PUBLIC_VELOCITY_API_KEY ?? '',
+    );
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_VELOCITY_API}/activity${
+        stakeKey ? `/${stakeKey[0]}` : ''
+      }`,
+      { headers: requestHeaders },
+    );
+    const data = await res.json();
+    setIsFetching(false);
+    return data;
+  };
 
   return {
     activity,

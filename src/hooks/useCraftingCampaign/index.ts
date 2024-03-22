@@ -91,25 +91,22 @@ export const useCraftingCampaign = (
   const [campaignConfig, setConfigData] = useState<any | null>(null);
   const { wallet, connected } = useWallet();
 
-  const check = useCallback(
-    async (includeItems?: boolean) => {
-      if (!connected) {
-        throw new Error('Wallet not connected');
-      }
-      if (status === CraftingStatusEnum.INIT) {
-        if (!wallet) return;
-        setStatus(CraftingStatusEnum.CHECKING);
-        const addresses = await wallet.getRewardAddresses();
-        const stakeKey = addresses[0];
-        const quote = await fetchCheck(stakeKey, includeItems, campaignKey, tag);
-        setCraftingData(quote?.status || { mints: [] });
-        setConfigData(quote.config);
-        setStatus(CraftingStatusEnum.READY);
-        return;
-      }
-    },
-    [connected, wallet, status],
-  );
+  const check = async (includeItems?: boolean) => {
+    if (!connected) {
+      throw new Error('Wallet not connected');
+    }
+    if (status === CraftingStatusEnum.INIT) {
+      if (!wallet) return;
+      setStatus(CraftingStatusEnum.CHECKING);
+      const addresses = await wallet.getRewardAddresses();
+      const stakeKey = addresses[0];
+      const quote = await fetchCheck(stakeKey, includeItems, campaignKey, tag);
+      setCraftingData(quote?.status || { mints: [] });
+      setConfigData(quote.config);
+      setStatus(CraftingStatusEnum.READY);
+      return;
+    }
+  };
 
   const quote = async (
     planId: string,

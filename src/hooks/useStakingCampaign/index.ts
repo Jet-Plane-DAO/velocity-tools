@@ -64,7 +64,7 @@ export const useStakingCampaign = (): IUseStakingCampaign => {
   const [campaignConfig, setConfigData] = useState<any | null>(null);
   const { wallet, connected } = useWallet();
 
-  const check = useCallback(() => {
+  const check = () => {
     if (status === StakingStatusEnum.INIT) {
       setStatus(StakingStatusEnum.CHECKING);
       wallet.getRewardAddresses().then((addresses: any) => {
@@ -92,7 +92,7 @@ export const useStakingCampaign = (): IUseStakingCampaign => {
         });
       });
     }
-  }, [wallet, status]);
+  };
 
   const register = useCallback(async () => {
     if (status !== StakingStatusEnum.UNSTAKED) return;

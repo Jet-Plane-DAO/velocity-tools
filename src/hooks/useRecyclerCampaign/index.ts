@@ -82,7 +82,7 @@ export const useRecyclerCampaign = (campaignKey?: string): IUseRecyclerCampaign 
   const [quoteData, setQuoteData] = useState<any | null>(null);
   const { wallet, connected } = useWallet();
 
-  const check = useCallback(() => {
+  const check = () => {
     if (!connected) {
       throw new Error('Wallet not connected');
     }
@@ -115,7 +115,7 @@ export const useRecyclerCampaign = (campaignKey?: string): IUseRecyclerCampaign 
         });
       });
     }
-  }, [connected, wallet, status]);
+  };
 
   const quote = async (inputUnits: string[], recycleUnits: string[] = []) => {
     const requestHeaders: HeadersInit = new Headers();
