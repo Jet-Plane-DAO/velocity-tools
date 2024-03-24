@@ -1,13 +1,13 @@
 import { useCallback, useState } from 'react';
 
 import { LOVELACE_MULTIPLIER } from '../../helpers/ada';
-import { Transaction, keepRelevant, largestFirst } from '@meshsdk/core';
+import { Transaction, keepRelevant } from '@meshsdk/core';
 import { useWallet } from '@meshsdk/react';
 
 type IUseStakingCampaign = {
-  check: (wallet: any) => void;
-  register: (wallet: any) => void;
-  claim: (wallet: any) => void;
+  check: () => void;
+  register: () => void;
+  claim: () => void;
   campaignConfig: any;
   stakingData: any;
   status: StakingStatusEnum;
