@@ -5,6 +5,7 @@ import { useCampaignAssets } from '../useCampaignAssets';
 import PropTypes from 'prop-types';
 import {
   getNativeTokenAsset,
+  logDebugMessage,
   noAssetsAdaAmount,
   sendAssets,
   setAddressMetadata,
@@ -91,6 +92,7 @@ export const useMintCampaign = (campaignKey?: string): IUseMintCampaign => {
       throw new Error('Wallet not connected');
     }
     setStatus(MintStatusEnum.CHECKING);
+    logDebugMessage(`Checking campaign ${campaignKey}`);
     const addresses = await wallet.getRewardAddresses();
     const stakeKey = addresses[0];
     const quote = await fetchCheck(stakeKey, includeItems, campaignKey);

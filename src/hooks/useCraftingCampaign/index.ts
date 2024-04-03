@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import {
   getNativeTokenAsset,
   logConfig,
+  logDebugMessage,
   noAssetsAdaAmount,
   sendAssets,
   setAddressMetadata,
@@ -95,6 +96,7 @@ export const useCraftingCampaign = (
       throw new Error('Wallet not connected');
     }
     if (!wallet) return;
+    logDebugMessage(`Checking campaign ${campaignKey}`);
     setStatus(CraftingStatusEnum.CHECKING);
     const addresses = await wallet.getRewardAddresses();
     const stakeKey = addresses[0];

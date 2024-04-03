@@ -19,14 +19,18 @@ export const logTx = (tx: any) => {
       recipients: tx._recipients,
       txWithdrawals: tx._txWithdrawals,
     });
-  } catch (error) {}
+  } catch (error) { }
 };
+
+export const logDebugMessage = (message: string) => {
+  if (debug) console.log(`[message]: ${message}`);
+}
 
 export const getNativeTokenAsset = (campaignConfig: any, plan: any) => {
   return plan.craftCurrency?.length > 0
     ? campaignConfig?.inputs?.find(
-        (x: any) => x.id === plan.craftCurrency.split('/').pop(),
-      )?.assetId
+      (x: any) => x.id === plan.craftCurrency.split('/').pop(),
+    )?.assetId
     : campaignConfig?.nativeTokenAsset;
 };
 
