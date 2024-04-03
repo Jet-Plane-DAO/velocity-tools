@@ -87,19 +87,17 @@ export const useMintCampaign = (campaignKey?: string): IUseMintCampaign => {
   const { wallet, connected } = useWallet();
 
   const check = async (includeItems?: boolean) => {
-    if (!connected) {
+    if (!connected || !wallet) {
       throw new Error('Wallet not connected');
     }
-    if (status === MintStatusEnum.INIT) {
-      setStatus(MintStatusEnum.CHECKING);
-      const addresses = await wallet.getRewardAddresses();
-      const stakeKey = addresses[0];
-      const quote = await fetchCheck(stakeKey, includeItems, campaignKey);
-      setCraftingData(quote?.status || { crafts: [], mints: [], locked: [] });
-      setConfigData(quote.config);
-      setStatus(MintStatusEnum.READY);
-      return;
-    }
+    setStatus(MintStatusEnum.CHECKING);
+    const addresses = await wallet.getRewardAddresses();
+    const stakeKey = addresses[0];
+    const quote = await fetchCheck(stakeKey, includeItems, campaignKey);
+    setCraftingData(quote?.status || { crafts: [], mints: [], locked: [] });
+    setConfigData(quote.config);
+    setStatus(MintStatusEnum.READY);
+    return;
   };
 
   const quote = async (

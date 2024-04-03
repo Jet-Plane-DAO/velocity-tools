@@ -94,17 +94,15 @@ export const useCraftingCampaign = (
     if (!connected) {
       throw new Error('Wallet not connected');
     }
-    if (status === CraftingStatusEnum.INIT) {
-      if (!wallet) return;
-      setStatus(CraftingStatusEnum.CHECKING);
-      const addresses = await wallet.getRewardAddresses();
-      const stakeKey = addresses[0];
-      const quote = await fetchCheck(stakeKey, includeItems, campaignKey, tag);
-      setCraftingData(quote?.status || { mints: [] });
-      setConfigData(quote.config);
-      setStatus(CraftingStatusEnum.READY);
-      return;
-    }
+    if (!wallet) return;
+    setStatus(CraftingStatusEnum.CHECKING);
+    const addresses = await wallet.getRewardAddresses();
+    const stakeKey = addresses[0];
+    const quote = await fetchCheck(stakeKey, includeItems, campaignKey, tag);
+    setCraftingData(quote?.status || { mints: [] });
+    setConfigData(quote.config);
+    setStatus(CraftingStatusEnum.READY);
+    return;
   };
 
   const quote = async (
