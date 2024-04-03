@@ -17,9 +17,9 @@ import { fetchCheck, fetchQuote } from '../../helpers/quote';
 
 type IUseCraftingCampaign = {
   check: (includeItems?: boolean) => void;
-  craft: (planId: string, input: any[], concurrent: number) => Promise<string>;
+  craft: (planId: string, input: any[], concurrent: number, tokenSplit?: number) => Promise<string>;
   claim: (craftId: string) => Promise<string>;
-  quote: (planId: string, inputUnits: string[], concurrent: number) => Promise<any>;
+  quote: (planId: string, inputUnits: string[], concurrent: number, tokenSplit?: number) => Promise<any>;
   campaignConfig: any;
   craftingData: any;
   availableBP: any;
