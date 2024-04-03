@@ -86,35 +86,32 @@ export const useRecyclerCampaign = (campaignKey?: string): IUseRecyclerCampaign 
     if (!connected) {
       throw new Error('Wallet not connected');
     }
-    if (status === RecyclerStatusEnum.INIT) {
-      setStatus(RecyclerStatusEnum.CHECKING);
-      wallet.getRewardAddresses().then((addresses: any) => {
-        const stakeKey = addresses[0];
-        const requestHeaders: HeadersInit = new Headers();
-        requestHeaders.set(
-          'jetplane-api-key',
-          process.env.NEXT_PUBLIC_VELOCITY_API_KEY ?? '',
-        );
-        fetch(
-          `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${
-            campaignKey || process.env.NEXT_PUBLIC_VELOCITY_RECYCLER_CAMPAIGN_NAME
-          }/check/${stakeKey}`,
-          { headers: requestHeaders },
-        ).then(async (res) => {
-          if (res.status === 200) {
-            const data = await res.json();
-            setRecyclerData(data?.status || { recycles: [] });
-            setConfigData(data.config);
-            setStatus(RecyclerStatusEnum.READY);
-          } else {
-            const data = await res.json();
-            setConfigData(data.config);
-            setStatus(RecyclerStatusEnum.READY);
-          }
-          return;
-        });
+    setStatus(RecyclerStatusEnum.CHECKING);
+    wallet.getRewardAddresses().then((addresses: any) => {
+      const stakeKey = addresses[0];
+      const requestHeaders: HeadersInit = new Headers();
+      requestHeaders.set(
+        'jetplane-api-key',
+        process.env.NEXT_PUBLIC_VELOCITY_API_KEY ?? '',
+      );
+      fetch(
+        `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${campaignKey || process.env.NEXT_PUBLIC_VELOCITY_RECYCLER_CAMPAIGN_NAME
+        }/check/${stakeKey}`,
+        { headers: requestHeaders },
+      ).then(async (res) => {
+        if (res.status === 200) {
+          const data = await res.json();
+          setRecyclerData(data?.status || { recycles: [] });
+          setConfigData(data.config);
+          setStatus(RecyclerStatusEnum.READY);
+        } else {
+          const data = await res.json();
+          setConfigData(data.config);
+          setStatus(RecyclerStatusEnum.READY);
+        }
+        return;
       });
-    }
+    });
   };
 
   const quote = async (inputUnits: string[], recycleUnits: string[] = []) => {
@@ -127,8 +124,7 @@ export const useRecyclerCampaign = (campaignKey?: string): IUseRecyclerCampaign 
       inputUnits.push(availableBP.unit);
     }
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${
-        campaignKey || process.env.NEXT_PUBLIC_VELOCITY_RECYCLER_CAMPAIGN_NAME
+      `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${campaignKey || process.env.NEXT_PUBLIC_VELOCITY_RECYCLER_CAMPAIGN_NAME
       }/quote`,
       {
         headers: requestHeaders,
