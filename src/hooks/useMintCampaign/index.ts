@@ -4,7 +4,6 @@ import { useWallet } from '@meshsdk/react';
 import { useCampaignAssets } from '../useCampaignAssets';
 import PropTypes from 'prop-types';
 import {
-  getNativeTokenAsset,
   logDebugMessage,
   noAssetsAdaAmount,
   sendAssets,
@@ -138,7 +137,8 @@ export const useMintCampaign = (campaignKey?: string): IUseMintCampaign => {
 
       const tx = new Transaction({ initiator: wallet });
 
-      const nativeTokenAsset = getNativeTokenAsset(campaignConfig, plan);
+      const currency = quoteResponse?.quote?.currency || 'lovelace';
+
       await sendAssets(
         quoteResponse.quote.time === 0
           ? quoteResponse.quote.fee
@@ -148,7 +148,7 @@ export const useMintCampaign = (campaignKey?: string): IUseMintCampaign => {
         tx,
         wallet,
         campaignConfig.walletAddress,
-        nativeTokenAsset,
+        currency,
       );
 
       tx.setMetadata(0, { t: 'mint', p: planId, c: concurrent, s: `${tokenSplit}` });

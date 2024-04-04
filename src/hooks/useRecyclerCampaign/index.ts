@@ -1,10 +1,8 @@
 import { useCallback, useState } from 'react';
 import { Transaction, keepRelevant } from '@meshsdk/core';
 import { useWallet } from '@meshsdk/react';
-import { LOVELACE_MULTIPLIER } from '../../helpers/ada';
 import { useCampaignAssets } from '../useCampaignAssets';
 import {
-  getNativeTokenAsset,
   sendAssets,
   setAddressMetadata,
   submitTx,

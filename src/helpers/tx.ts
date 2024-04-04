@@ -26,14 +26,6 @@ export const logDebugMessage = (message: string) => {
   if (debug) console.log(`[message]: ${message}`);
 }
 
-export const getNativeTokenAsset = (campaignConfig: any, plan: any) => {
-  return plan.craftCurrency?.length > 0
-    ? campaignConfig?.inputs?.find(
-      (x: any) => x.id === plan.craftCurrency.split('/').pop(),
-    )?.assetId
-    : campaignConfig?.nativeTokenAsset;
-};
-
 export const noAssetsAdaAmount = (q: any) =>
   (q.assetsToInclude || []).length === 0 && q.price === 0 ? 1 : 0;
 

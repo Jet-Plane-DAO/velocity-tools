@@ -4,7 +4,6 @@ import { useWallet } from '@meshsdk/react';
 import { useCampaignAssets } from '../useCampaignAssets';
 import PropTypes from 'prop-types';
 import {
-  getNativeTokenAsset,
   logConfig,
   logDebugMessage,
   noAssetsAdaAmount,
@@ -140,6 +139,11 @@ export const useCraftingCampaign = (
       });
 
       const plan = validatePlan(connected, campaignConfig, planId, selectedInputs);
+
+      if (!plan) {
+        throw new Error('Plan not valid');
+      }
+
       const quoteResponse = await quote(
         planId,
         (selectedInputs || []).map((i) => i.unit),
@@ -150,7 +154,7 @@ export const useCraftingCampaign = (
 
       const tx = new Transaction({ initiator: wallet });
 
-      const nativeTokenAsset = getNativeTokenAsset(campaignConfig, plan);
+      const craftCurrency = quoteResponse?.quote?.craftCurrency || 'lovelace';
 
       await sendAssets(
         quoteResponse.quote.time === 0
@@ -161,7 +165,7 @@ export const useCraftingCampaign = (
         tx,
         wallet,
         campaignConfig.walletAddress,
-        nativeTokenAsset,
+        craftCurrency,
       );
 
       tx.setMetadata(0, {
@@ -198,7 +202,7 @@ export const useCraftingCampaign = (
 
       const tx = new Transaction({ initiator: wallet });
 
-      const nativeTokenAsset = getNativeTokenAsset(campaignConfig, craft.plan);
+      const currency = craft?.quote?.currency || 'lovelace';
 
       await sendAssets(
         craft.quote.fee,
@@ -207,7 +211,7 @@ export const useCraftingCampaign = (
         tx,
         wallet,
         campaignConfig.walletAddress,
-        nativeTokenAsset,
+        currency,
       );
       tx.setMetadata(0, { t: 'claim', cid: craftId });
 
