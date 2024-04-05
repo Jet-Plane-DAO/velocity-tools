@@ -154,7 +154,7 @@ export const useCraftingCampaign = (
 
       const tx = new Transaction({ initiator: wallet });
 
-      const craftCurrency = quoteResponse?.quote?.craftCurrency || 'lovelace';
+      const currency = quoteResponse?.quote?.currency || 'lovelace';
 
       await sendAssets(
         quoteResponse.quote.time === 0
@@ -165,7 +165,7 @@ export const useCraftingCampaign = (
         tx,
         wallet,
         campaignConfig.walletAddress,
-        craftCurrency,
+        currency,
       );
 
       tx.setMetadata(0, {
