@@ -64,46 +64,48 @@ export const sendAssets = async (
 
   const assetMap = new Map();
 
-  if (adaAmount > 0) {
-    if (debug)
-      console.log(
-        '[set lovelace]',
+  if (nativeTokenAmount > 0 || assetUnits?.length) {
+    if (adaAmount > 0) {
+      if (debug)
+        console.log(
+          '[set lovelace]',
+          `${Math.round(adaAmount * LOVELACE_MULTIPLIER + MIN_ADA_TO_RETURN)}`,
+        );
+      assetMap.set(
+        'lovelace',
         `${Math.round(adaAmount * LOVELACE_MULTIPLIER + MIN_ADA_TO_RETURN)}`,
       );
-    assetMap.set(
-      'lovelace',
-      `${Math.round(adaAmount * LOVELACE_MULTIPLIER + MIN_ADA_TO_RETURN)}`,
+    } else {
+      if (debug)
+        console.log('[set lovelace]', `${Math.round(2 * LOVELACE_MULTIPLIER)}`);
+      assetMap.set('lovelace', `${Math.round(2 * LOVELACE_MULTIPLIER)}`);
+    }
+
+    if (nativeTokenAmount > 0) {
+      if (debug)
+        console.log('[set token]', `${nativeTokenAmount} ${nativeTokenAsset}`);
+      assetMap.set(nativeTokenAsset, `${nativeTokenAmount}`);
+    }
+
+    if (assetUnits?.length) {
+      assetUnits.map((a: any) => {
+        if (debug) console.log(`[set ${a}]`, `1`);
+        return assetMap.set(a, `1`);
+      });
+    }
+
+    const relevant = keepRelevant(
+      assetMap,
+      utxos,
+      adaAmount > 0
+        ? `${Math.round(adaAmount * LOVELACE_MULTIPLIER + MIN_ADA_TO_RETURN)}`
+        : `${MIN_ADA_TO_RETURN}`,
     );
-  } else {
-    if (debug)
-      console.log('[set lovelace]', `${Math.round(2 * LOVELACE_MULTIPLIER)}`);
-    assetMap.set('lovelace', `${Math.round(2 * LOVELACE_MULTIPLIER)}`);
+
+    const inputs = relevant?.length ? relevant : utxos;
+    if (debug) console.log(`[set inputs]`, inputs);
+    tx.setTxInputs(inputs);
   }
-
-  if (nativeTokenAmount > 0) {
-    if (debug)
-      console.log('[set token]', `${nativeTokenAmount} ${nativeTokenAsset}`);
-    assetMap.set(nativeTokenAsset, `${nativeTokenAmount}`);
-  }
-
-  if (assetUnits?.length) {
-    assetUnits.map((a: any) => {
-      if (debug) console.log(`[set ${a}]`, `1`);
-      return assetMap.set(a, `1`);
-    });
-  }
-
-  const relevant = keepRelevant(
-    assetMap,
-    utxos,
-    adaAmount > 0
-      ? `${Math.round(adaAmount * LOVELACE_MULTIPLIER + MIN_ADA_TO_RETURN)}`
-      : `${MIN_ADA_TO_RETURN}`,
-  );
-
-  const inputs = relevant?.length ? relevant : utxos;
-  if (debug) console.log(`[set inputs]`, inputs);
-  tx.setTxInputs(inputs);
 
   if (adaAmount > 0) {
     if (debug)
