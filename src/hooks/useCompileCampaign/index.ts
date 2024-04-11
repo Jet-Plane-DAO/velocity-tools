@@ -4,6 +4,8 @@ import { useWallet } from '@meshsdk/react';
 import { useCampaignAssets } from '../useCampaignAssets';
 import PropTypes from 'prop-types';
 import {
+  UTXOStrategy,
+  UTXOStrategyType,
   logConfig,
   logDebugMessage,
   noAssetsAdaAmount,
@@ -82,6 +84,7 @@ export enum CompileStatusEnum {
  */
 
 export const useCompileCampaign = (
+  strategy: UTXOStrategy,
   campaignKey?: string,
   tag?: string,
 ): IUseCompileCampaign => {
@@ -166,6 +169,7 @@ export const useCompileCampaign = (
         wallet,
         campaignConfig.walletAddress,
         currency,
+        strategy
       );
 
       tx.setMetadata(0, {
@@ -201,8 +205,11 @@ export const useCompileCampaign = (
   };
 };
 
+
 useCompileCampaign.PropTypes = {
+  strategy: UTXOStrategyType,
   campaignKey: PropTypes.string,
+  tag: PropTypes.string,
 };
 
 useCompileCampaign.defaultProps = {};

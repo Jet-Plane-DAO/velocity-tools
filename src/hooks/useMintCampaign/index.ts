@@ -4,6 +4,8 @@ import { useWallet } from '@meshsdk/react';
 import { useCampaignAssets } from '../useCampaignAssets';
 import PropTypes from 'prop-types';
 import {
+  UTXOStrategy,
+  UTXOStrategyType,
   logDebugMessage,
   noAssetsAdaAmount,
   sendAssets,
@@ -80,7 +82,11 @@ export enum MintStatusEnum {
  *    }
  */
 
-export const useMintCampaign = (campaignKey?: string): IUseMintCampaign => {
+export const useMintCampaign = (
+  strategy: UTXOStrategy,
+  campaignKey?: string,
+  tag?: string
+): IUseMintCampaign => {
   const { craftingData, setCraftingData, availableBP } = useCampaignAssets();
   const [status, setStatus] = useState<MintStatusEnum>(MintStatusEnum.INIT);
   const [campaignConfig, setConfigData] = useState<any | null>(null);
@@ -94,7 +100,7 @@ export const useMintCampaign = (campaignKey?: string): IUseMintCampaign => {
     logDebugMessage(`Checking campaign ${campaignKey}`);
     const addresses = await wallet.getRewardAddresses();
     const stakeKey = addresses[0];
-    const quote = await fetchCheck(stakeKey, includeItems, campaignKey);
+    const quote = await fetchCheck(stakeKey, includeItems, campaignKey, tag);
     setCraftingData(quote?.status || { crafts: [], mints: [], locked: [] });
     setConfigData(quote.config);
     setStatus(MintStatusEnum.READY);
@@ -149,6 +155,7 @@ export const useMintCampaign = (campaignKey?: string): IUseMintCampaign => {
         wallet,
         campaignConfig.walletAddress,
         currency,
+        strategy
       );
 
       tx.setMetadata(0, { t: 'mint', p: planId, c: concurrent, s: `${tokenSplit}` });
@@ -179,7 +186,9 @@ export const useMintCampaign = (campaignKey?: string): IUseMintCampaign => {
 };
 
 useMintCampaign.PropTypes = {
+  strategy: UTXOStrategyType,
   campaignKey: PropTypes.string,
+  tag: PropTypes.string,
 };
 
 useMintCampaign.defaultProps = {};

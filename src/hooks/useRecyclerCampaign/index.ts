@@ -1,8 +1,11 @@
 import { useCallback, useState } from 'react';
-import { Transaction, keepRelevant } from '@meshsdk/core';
+import { Transaction } from '@meshsdk/core';
 import { useWallet } from '@meshsdk/react';
 import { useCampaignAssets } from '../useCampaignAssets';
+import PropTypes from 'prop-types';
 import {
+  UTXOStrategy,
+  UTXOStrategyType,
   sendAssets,
   setAddressMetadata,
   submitTx,
@@ -72,7 +75,10 @@ export enum RecyclerStatusEnum {
  *    }
  */
 
-export const useRecyclerCampaign = (campaignKey?: string): IUseRecyclerCampaign => {
+export const useRecyclerCampaign = (
+  strategy: UTXOStrategy = UTXOStrategy.ISOLATED,
+  campaignKey?: string
+): IUseRecyclerCampaign => {
   const { availableBP } = useCampaignAssets();
   const [recyclerData, setRecyclerData] = useState<any | null>(null);
   const [status, setStatus] = useState<RecyclerStatusEnum>(RecyclerStatusEnum.INIT);
@@ -177,6 +183,7 @@ export const useRecyclerCampaign = (campaignKey?: string): IUseRecyclerCampaign 
         wallet,
         campaignConfig.walletAddress,
         nativeTokenAsset,
+        strategy
       );
 
       tx.setMetadata(0, { t: 'recycle' });
@@ -213,6 +220,10 @@ export const useRecyclerCampaign = (campaignKey?: string): IUseRecyclerCampaign 
   };
 };
 
-useRecyclerCampaign.PropTypes = {};
+useRecyclerCampaign.PropTypes = {
+
+  strategy: UTXOStrategyType,
+  campaignKey: PropTypes.string,
+};
 
 useRecyclerCampaign.defaultProps = {};

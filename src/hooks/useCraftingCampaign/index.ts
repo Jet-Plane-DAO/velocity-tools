@@ -4,6 +4,7 @@ import { useWallet } from '@meshsdk/react';
 import { useCampaignAssets } from '../useCampaignAssets';
 import PropTypes from 'prop-types';
 import {
+  UTXOStrategy,
   logConfig,
   logDebugMessage,
   noAssetsAdaAmount,
@@ -36,6 +37,8 @@ export enum CraftingStatusEnum {
   UPGRADING = 'UPGRADING',
   UPGRADE_PENDING = 'UPGRADE_PENDING',
 }
+
+
 
 /**
  * Velocity Tools Crafting Campaign Hook
@@ -84,6 +87,7 @@ export enum CraftingStatusEnum {
 export const useCraftingCampaign = (
   campaignKey?: string,
   tag?: string,
+  txnStrategy: UTXOStrategy = UTXOStrategy.ISOLATED,
 ): IUseCraftingCampaign => {
   const { craftingData, setCraftingData, availableBP } = useCampaignAssets();
   const [status, setStatus] = useState<CraftingStatusEnum>(CraftingStatusEnum.INIT);
@@ -166,6 +170,7 @@ export const useCraftingCampaign = (
         wallet,
         campaignConfig.walletAddress,
         currency,
+        txnStrategy,
       );
 
       tx.setMetadata(0, {
@@ -212,6 +217,7 @@ export const useCraftingCampaign = (
         wallet,
         campaignConfig.walletAddress,
         currency,
+        txnStrategy
       );
       tx.setMetadata(0, { t: 'claim', cid: craftId });
 
@@ -223,27 +229,10 @@ export const useCraftingCampaign = (
     [connected, wallet, status, campaignConfig, craftingData],
   );
 
-  // const upgrade = useCallback(
-  //   async (upgradeUnits: string[]) => {
-  //     // if (!connected) {
-  //     //   throw new Error('Wallet not connected');
-  //     // }
-  //     // setStatus(CraftingStatusEnum.UPGRADING);
-  //     // const tx = new Transaction({ initiator: wallet });
-  //     // await sendAssets(10, 0, upgradeUnits, tx, wallet, campaignConfig);
-  //     // tx.setMetadata(0, { t: 'upgrade' });
-  //     // const hash = await submitTx(tx, wallet);
-  //     // setStatus(CraftingStatusEnum.UPGRADE_PENDING);
-  //     // return hash;
-  //   },
-  //   [connected, wallet, status, campaignConfig, craftingData],
-  // );
-
   return {
     check,
     craft,
     claim,
-    // upgrade,
     campaignConfig,
     status,
     craftingData,
@@ -252,8 +241,14 @@ export const useCraftingCampaign = (
   };
 };
 
+const UTXOStrategyType = PropTypes.oneOf(
+  Object.values(UTXOStrategy) as UTXOStrategy[]
+);
+
 useCraftingCampaign.PropTypes = {
+  txnStrategy: UTXOStrategyType,
   campaignKey: PropTypes.string,
+  tag: PropTypes.string,
 };
 
 useCraftingCampaign.defaultProps = {};
