@@ -122,8 +122,8 @@ export const sendAssets = async (
   tx: Transaction,
   wallet: BrowserWallet,
   walletAddress: string,
-  nativeTokenAsset: string,
-  strategy: UTXOStrategy,
+  nativeTokenAsset?: string,
+  strategy: UTXOStrategy = UTXOStrategy.DEFAULT,
 ) => {
   if (strategy === UTXOStrategy.ISOLATED) {
     const inputs = await setIsolatedInputs(wallet, assetUnits, { amount: nativeTokenAmount, asset: nativeTokenAsset }, adaAmount);

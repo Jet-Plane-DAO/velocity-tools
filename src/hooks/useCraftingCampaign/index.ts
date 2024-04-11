@@ -134,6 +134,7 @@ export const useCraftingCampaign = (
       selectedInputs: any[],
       concurrent: number = 1,
       tokenSplit: number = 0,
+      overridStrategy: UTXOStrategy = strategy,
     ) => {
       logConfig({
         campaignConfig,
@@ -171,7 +172,7 @@ export const useCraftingCampaign = (
         wallet,
         campaignConfig.walletAddress,
         currency,
-        strategy,
+        overridStrategy
       );
 
       tx.setMetadata(0, {
@@ -197,7 +198,8 @@ export const useCraftingCampaign = (
   );
 
   const claim = useCallback(
-    async (craftId: string) => {
+    async (craftId: string,
+      overridStrategy: UTXOStrategy = strategy) => {
       if (!connected) {
         throw new Error('Wallet not connected');
       }
@@ -218,7 +220,7 @@ export const useCraftingCampaign = (
         wallet,
         campaignConfig.walletAddress,
         currency,
-        strategy
+        overridStrategy
       );
       tx.setMetadata(0, { t: 'claim', cid: craftId });
 

@@ -152,7 +152,8 @@ export const useRecyclerCampaign = (
   };
 
   const recycle = useCallback(
-    async (selectedInputs: any[], recycleUnits: string[]) => {
+    async (selectedInputs: any[], recycleUnits: string[],
+      overridStrategy: UTXOStrategy = strategy,) => {
       if (!connected) {
         throw new Error('Wallet not connected');
       }
@@ -183,7 +184,7 @@ export const useRecyclerCampaign = (
         wallet,
         campaignConfig.walletAddress,
         nativeTokenAsset,
-        strategy
+        overridStrategy
       );
 
       tx.setMetadata(0, { t: 'recycle' });

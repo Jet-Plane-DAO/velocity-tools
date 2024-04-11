@@ -130,6 +130,7 @@ export const useMintCampaign = (
       selectedInputs: any[],
       concurrent: number = 1,
       tokenSplit: number = 0,
+      overridStrategy: UTXOStrategy = strategy,
     ) => {
       const plan = validatePlan(connected, campaignConfig, planId, selectedInputs);
       const quoteResponse = await quote(
@@ -155,7 +156,7 @@ export const useMintCampaign = (
         wallet,
         campaignConfig.walletAddress,
         currency,
-        strategy
+        overridStrategy
       );
 
       tx.setMetadata(0, { t: 'mint', p: planId, c: concurrent, s: `${tokenSplit}` });
