@@ -18,7 +18,7 @@ import { fetchCheck, fetchQuote } from '../../helpers/quote';
 
 type IUseCompileCampaign = {
   check: (includeItems?: boolean) => void;
-  compile: (planId: string, input: any[], concurrent: number) => void;
+  compile: (planId: string, input: any[], concurrent: number, overridStrategy: UTXOStrategy) => void;
   quote: (planId: string, inputUnits: string[], concurrent: number) => Promise<any>;
   campaignConfig: any;
   craftingData: any;
