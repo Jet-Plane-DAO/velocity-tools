@@ -76,8 +76,8 @@ export enum RecyclerStatusEnum {
  */
 
 export const useRecyclerCampaign = (
-  strategy: UTXOStrategy = UTXOStrategy.ISOLATED,
-  campaignKey?: string
+  campaignKey?: string,
+  strategy: UTXOStrategy = UTXOStrategy.ISOLATED
 ): IUseRecyclerCampaign => {
   const { availableBP } = useCampaignAssets();
   const [recyclerData, setRecyclerData] = useState<any | null>(null);
@@ -221,9 +221,8 @@ export const useRecyclerCampaign = (
 };
 
 useRecyclerCampaign.PropTypes = {
-
-  strategy: UTXOStrategyType,
   campaignKey: PropTypes.string,
+  strategy: UTXOStrategyType,
 };
 
 useRecyclerCampaign.defaultProps = {};

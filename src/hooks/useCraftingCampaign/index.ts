@@ -5,6 +5,7 @@ import { useCampaignAssets } from '../useCampaignAssets';
 import PropTypes from 'prop-types';
 import {
   UTXOStrategy,
+  UTXOStrategyType,
   logConfig,
   logDebugMessage,
   noAssetsAdaAmount,
@@ -87,7 +88,7 @@ export enum CraftingStatusEnum {
 export const useCraftingCampaign = (
   campaignKey?: string,
   tag?: string,
-  txnStrategy: UTXOStrategy = UTXOStrategy.ISOLATED,
+  strategy: UTXOStrategy = UTXOStrategy.ISOLATED,
 ): IUseCraftingCampaign => {
   const { craftingData, setCraftingData, availableBP } = useCampaignAssets();
   const [status, setStatus] = useState<CraftingStatusEnum>(CraftingStatusEnum.INIT);
@@ -170,7 +171,7 @@ export const useCraftingCampaign = (
         wallet,
         campaignConfig.walletAddress,
         currency,
-        txnStrategy,
+        strategy,
       );
 
       tx.setMetadata(0, {
@@ -217,7 +218,7 @@ export const useCraftingCampaign = (
         wallet,
         campaignConfig.walletAddress,
         currency,
-        txnStrategy
+        strategy
       );
       tx.setMetadata(0, { t: 'claim', cid: craftId });
 
@@ -241,14 +242,10 @@ export const useCraftingCampaign = (
   };
 };
 
-const UTXOStrategyType = PropTypes.oneOf(
-  Object.values(UTXOStrategy) as UTXOStrategy[]
-);
-
 useCraftingCampaign.PropTypes = {
-  txnStrategy: UTXOStrategyType,
   campaignKey: PropTypes.string,
   tag: PropTypes.string,
+  strategy: UTXOStrategyType,
 };
 
 useCraftingCampaign.defaultProps = {};

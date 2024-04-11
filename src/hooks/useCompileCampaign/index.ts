@@ -84,9 +84,9 @@ export enum CompileStatusEnum {
  */
 
 export const useCompileCampaign = (
-  strategy: UTXOStrategy,
   campaignKey?: string,
   tag?: string,
+  strategy?: UTXOStrategy,
 ): IUseCompileCampaign => {
   const { craftingData, setCraftingData, availableBP } = useCampaignAssets();
   const [status, setStatus] = useState<CompileStatusEnum>(CompileStatusEnum.INIT);
@@ -169,7 +169,7 @@ export const useCompileCampaign = (
         wallet,
         campaignConfig.walletAddress,
         currency,
-        strategy
+        strategy ?? UTXOStrategy.ISOLATED,
       );
 
       tx.setMetadata(0, {
@@ -207,9 +207,9 @@ export const useCompileCampaign = (
 
 
 useCompileCampaign.PropTypes = {
-  strategy: UTXOStrategyType,
   campaignKey: PropTypes.string,
   tag: PropTypes.string,
+  strategy: UTXOStrategyType,
 };
 
 useCompileCampaign.defaultProps = {};

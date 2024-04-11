@@ -83,9 +83,9 @@ export enum MintStatusEnum {
  */
 
 export const useMintCampaign = (
-  strategy: UTXOStrategy,
   campaignKey?: string,
-  tag?: string
+  tag?: string,
+  strategy: UTXOStrategy = UTXOStrategy.ISOLATED,
 ): IUseMintCampaign => {
   const { craftingData, setCraftingData, availableBP } = useCampaignAssets();
   const [status, setStatus] = useState<MintStatusEnum>(MintStatusEnum.INIT);
@@ -186,9 +186,9 @@ export const useMintCampaign = (
 };
 
 useMintCampaign.PropTypes = {
-  strategy: UTXOStrategyType,
   campaignKey: PropTypes.string,
   tag: PropTypes.string,
+  strategy: UTXOStrategyType,
 };
 
 useMintCampaign.defaultProps = {};
