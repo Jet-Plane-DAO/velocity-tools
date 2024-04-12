@@ -18,7 +18,7 @@ import { fetchCheck, fetchQuote } from '../../helpers/quote';
 
 type IUseCraftingCampaign = {
   check: (includeItems?: boolean) => void;
-  craft: (planId: string, input: any[], concurrent: number, tokenSplit: number, overridStrategy: UTXOStrategy) => Promise<string>;
+  craft: (planId: string, input: any[], concurrent: number, tokenSplit: number, overridStrategy?: UTXOStrategy) => Promise<string>;
   claim: (craftId: string, overridStrategy: UTXOStrategy) => Promise<string>;
   quote: (planId: string, inputUnits: string[], concurrent: number, tokenSplit?: number) => Promise<any>;
   campaignConfig: any;
@@ -134,7 +134,7 @@ export const useCraftingCampaign = (
       selectedInputs: any[],
       concurrent: number = 1,
       tokenSplit: number = 0,
-      overridStrategy: UTXOStrategy = strategy,
+      overridStrategy?: UTXOStrategy,
     ) => {
       logConfig({
         campaignConfig,
@@ -172,7 +172,7 @@ export const useCraftingCampaign = (
         wallet,
         campaignConfig.walletAddress,
         currency,
-        overridStrategy
+        overridStrategy ?? strategy
       );
 
       tx.setMetadata(0, {
@@ -199,7 +199,7 @@ export const useCraftingCampaign = (
 
   const claim = useCallback(
     async (craftId: string,
-      overridStrategy: UTXOStrategy = strategy) => {
+      overrideStrategy?: UTXOStrategy) => {
       if (!connected) {
         throw new Error('Wallet not connected');
       }
@@ -220,7 +220,7 @@ export const useCraftingCampaign = (
         wallet,
         campaignConfig.walletAddress,
         currency,
-        overridStrategy
+        overrideStrategy ?? strategy
       );
       tx.setMetadata(0, { t: 'claim', cid: craftId });
 

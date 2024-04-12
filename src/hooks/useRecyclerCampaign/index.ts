@@ -15,7 +15,7 @@ import { isPolicyOffChain } from '../../helpers/offchain';
 type IUseRecyclerCampaign = {
   check: () => void;
   quote: (inputUnits: string[], recyclerUnits: string[]) => Promise<any>;
-  recycle: (inputUnits: any[], recycleUnits: string[], overridStrategy: UTXOStrategy) => Promise<any>;
+  recycle: (inputUnits: any[], recycleUnits: string[], overrideStrategy: UTXOStrategy) => Promise<any>;
   campaignConfig: any;
   recyclerData: any;
   availableBP: any;
@@ -152,8 +152,10 @@ export const useRecyclerCampaign = (
   };
 
   const recycle = useCallback(
-    async (selectedInputs: any[], recycleUnits: string[],
-      overridStrategy: UTXOStrategy = strategy,) => {
+    async (selectedInputs: any[],
+      recycleUnits: string[],
+      overridStrategy?: UTXOStrategy
+    ) => {
       if (!connected) {
         throw new Error('Wallet not connected');
       }
@@ -184,7 +186,7 @@ export const useRecyclerCampaign = (
         wallet,
         campaignConfig.walletAddress,
         nativeTokenAsset,
-        overridStrategy
+        overridStrategy ?? strategy,
       );
 
       tx.setMetadata(0, { t: 'recycle' });

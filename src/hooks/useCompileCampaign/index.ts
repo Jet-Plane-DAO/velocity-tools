@@ -18,7 +18,7 @@ import { fetchCheck, fetchQuote } from '../../helpers/quote';
 
 type IUseCompileCampaign = {
   check: (includeItems?: boolean) => void;
-  compile: (planId: string, input: any[], concurrent: number, overridStrategy: UTXOStrategy) => void;
+  compile: (planId: string, input: any[], concurrent?: number, overridStrategy?: UTXOStrategy) => void;
   quote: (planId: string, inputUnits: string[], concurrent: number) => Promise<any>;
   campaignConfig: any;
   craftingData: any;
@@ -132,7 +132,7 @@ export const useCompileCampaign = (
       selectedInputs: any[],
       concurrent: number = 1,
       tokenSplit: number = 0,
-      overridStrategy: UTXOStrategy = strategy,
+      overridStrategy?: UTXOStrategy,
     ) => {
       logConfig({
         campaignConfig,
@@ -170,7 +170,7 @@ export const useCompileCampaign = (
         wallet,
         campaignConfig.walletAddress,
         currency,
-        overridStrategy
+        overridStrategy ?? strategy
       );
 
       tx.setMetadata(0, {
