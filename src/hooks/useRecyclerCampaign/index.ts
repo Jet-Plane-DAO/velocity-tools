@@ -15,7 +15,7 @@ import { isPolicyOffChain } from '../../helpers/offchain';
 type IUseRecyclerCampaign = {
   check: () => void;
   quote: (inputUnits: string[], recyclerUnits: string[]) => Promise<any>;
-  recycle: (inputUnits: any[], recycleUnits: string[], overrideStrategy: UTXOStrategy) => Promise<any>;
+  recycle: (inputUnits: any[], recycleUnits: string[], overrideStrategy?: UTXOStrategy) => Promise<any>;
   campaignConfig: any;
   recyclerData: any;
   availableBP: any;

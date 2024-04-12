@@ -17,7 +17,7 @@ import { fetchCheck, fetchQuote } from '../../helpers/quote';
 
 type IUseMintCampaign = {
   check: (includeItems?: boolean) => void;
-  mint: (planId: string, input: any[], concurrent: number, tokenSplit: number, overrideStrategy: UTXOStrategy) => void;
+  mint: (planId: string, input: any[], concurrent: number, tokenSplit: number, overrideStrategy?: UTXOStrategy) => void;
   quote: (planId: string, inputUnits: string[], concurrent: number, tokenSplit?: number) => Promise<any>;
   campaignConfig: any;
   craftingData: any;
