@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { LOVELACE_MULTIPLIER } from '../../helpers/ada';
 import { Transaction, keepRelevant } from '@meshsdk/core';
 import { useWallet } from '@meshsdk/react';
+import { UTXOStrategy, sendAssets, submitTx } from '../../helpers/tx';
 
 type IUseStakingCampaign = {
   check: () => void;
@@ -98,28 +99,23 @@ export const useStakingCampaign = (): IUseStakingCampaign => {
     if (status !== StakingStatusEnum.UNSTAKED) return;
     setStatus(StakingStatusEnum.REGISTERING);
 
-    const utxos = await wallet.getUtxos();
-
-    const costLovelace = `${campaignConfig!.registrationFee * LOVELACE_MULTIPLIER}`;
-    // const selectedUtxos = largestFirst(costLovelace, utxos, true);
-
-    const assetMap = new Map();
-
-    assetMap.set('lovelace', costLovelace);
-
-    const relevant = keepRelevant(assetMap, utxos, costLovelace);
-
     const tx = new Transaction({ initiator: wallet })
-      .setTxInputs(relevant)
-      .sendLovelace(campaignConfig!.walletAddress, costLovelace);
+    await sendAssets(
+      campaignConfig!.registrationFee,
+      0,
+      [],
+      tx,
+      wallet,
+      campaignConfig.walletAddress,
+      undefined,
+      UTXOStrategy.DEFAULT
+    );
 
-    const unsignedTx = await tx.build();
-    const signedTx = await wallet.signTx(unsignedTx);
-
-    await wallet.submitTx(signedTx);
-
+    await submitTx(tx, wallet);
     setStatus(StakingStatusEnum.REGISTRATION_PENDING);
+
     return;
+
   }, [wallet, status, campaignConfig]);
 
   const claim = useCallback(async () => {
@@ -129,22 +125,19 @@ export const useStakingCampaign = (): IUseStakingCampaign => {
     }
 
     setStatus(StakingStatusEnum.CLAIMING);
-
-    const utxos = await wallet.getUtxos();
-    const costLovelace = `${campaignConfig.claimFee * LOVELACE_MULTIPLIER}`;
-    const assetMap = new Map();
-
-    assetMap.set('lovelace', costLovelace);
-
-    const relevant = keepRelevant(assetMap, utxos, costLovelace);
-
     const tx = new Transaction({ initiator: wallet })
-      .setTxInputs(relevant)
-      .sendLovelace(campaignConfig.walletAddress, costLovelace);
-    const unsignedTx = await tx.build();
-    const signedTx = await wallet.signTx(unsignedTx);
-    await wallet.submitTx(signedTx);
+    await sendAssets(
+      campaignConfig!.claimFee,
+      0,
+      [],
+      tx,
+      wallet,
+      campaignConfig.walletAddress,
+      undefined,
+      UTXOStrategy.DEFAULT
+    );
 
+    await submitTx(tx, wallet);
     setStatus(StakingStatusEnum.CLAIM_PENDING);
     return;
   }, [connected, wallet, status, campaignConfig]);

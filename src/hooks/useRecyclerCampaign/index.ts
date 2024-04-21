@@ -1,8 +1,11 @@
 import { useCallback, useState } from 'react';
-import { Transaction, keepRelevant } from '@meshsdk/core';
+import { Transaction } from '@meshsdk/core';
 import { useWallet } from '@meshsdk/react';
 import { useCampaignAssets } from '../useCampaignAssets';
+import PropTypes from 'prop-types';
 import {
+  UTXOStrategy,
+  UTXOStrategyType,
   sendAssets,
   setAddressMetadata,
   submitTx,
@@ -12,7 +15,7 @@ import { isPolicyOffChain } from '../../helpers/offchain';
 type IUseRecyclerCampaign = {
   check: () => void;
   quote: (inputUnits: string[], recyclerUnits: string[]) => Promise<any>;
-  recycle: (inputUnits: any[], recycleUnits: string[]) => Promise<any>;
+  recycle: (inputUnits: any[], recycleUnits: string[], overrideStrategy?: UTXOStrategy) => Promise<any>;
   campaignConfig: any;
   recyclerData: any;
   availableBP: any;
@@ -72,7 +75,10 @@ export enum RecyclerStatusEnum {
  *    }
  */
 
-export const useRecyclerCampaign = (campaignKey?: string): IUseRecyclerCampaign => {
+export const useRecyclerCampaign = (
+  campaignKey?: string,
+  strategy: UTXOStrategy = UTXOStrategy.ISOLATED
+): IUseRecyclerCampaign => {
   const { availableBP } = useCampaignAssets();
   const [recyclerData, setRecyclerData] = useState<any | null>(null);
   const [status, setStatus] = useState<RecyclerStatusEnum>(RecyclerStatusEnum.INIT);
@@ -146,7 +152,10 @@ export const useRecyclerCampaign = (campaignKey?: string): IUseRecyclerCampaign 
   };
 
   const recycle = useCallback(
-    async (selectedInputs: any[], recycleUnits: string[]) => {
+    async (selectedInputs: any[],
+      recycleUnits: string[],
+      overridStrategy?: UTXOStrategy
+    ) => {
       if (!connected) {
         throw new Error('Wallet not connected');
       }
@@ -177,6 +186,7 @@ export const useRecyclerCampaign = (campaignKey?: string): IUseRecyclerCampaign 
         wallet,
         campaignConfig.walletAddress,
         nativeTokenAsset,
+        overridStrategy ?? strategy,
       );
 
       tx.setMetadata(0, { t: 'recycle' });
@@ -213,6 +223,9 @@ export const useRecyclerCampaign = (campaignKey?: string): IUseRecyclerCampaign 
   };
 };
 
-useRecyclerCampaign.PropTypes = {};
+useRecyclerCampaign.PropTypes = {
+  campaignKey: PropTypes.string,
+  strategy: UTXOStrategyType,
+};
 
 useRecyclerCampaign.defaultProps = {};

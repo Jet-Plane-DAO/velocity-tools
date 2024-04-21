@@ -4,6 +4,8 @@ import { useWallet } from '@meshsdk/react';
 import { useCampaignAssets } from '../useCampaignAssets';
 import PropTypes from 'prop-types';
 import {
+  UTXOStrategy,
+  UTXOStrategyType,
   logConfig,
   logDebugMessage,
   noAssetsAdaAmount,
@@ -16,7 +18,7 @@ import { fetchCheck, fetchQuote } from '../../helpers/quote';
 
 type IUseCompileCampaign = {
   check: (includeItems?: boolean) => void;
-  compile: (planId: string, input: any[], concurrent: number) => void;
+  compile: (planId: string, input: any[], concurrent?: number, overridStrategy?: UTXOStrategy) => void;
   quote: (planId: string, inputUnits: string[], concurrent: number) => Promise<any>;
   campaignConfig: any;
   craftingData: any;
@@ -84,6 +86,7 @@ export enum CompileStatusEnum {
 export const useCompileCampaign = (
   campaignKey?: string,
   tag?: string,
+  strategy: UTXOStrategy = UTXOStrategy.ISOLATED,
 ): IUseCompileCampaign => {
   const { craftingData, setCraftingData, availableBP } = useCampaignAssets();
   const [status, setStatus] = useState<CompileStatusEnum>(CompileStatusEnum.INIT);
@@ -129,6 +132,7 @@ export const useCompileCampaign = (
       selectedInputs: any[],
       concurrent: number = 1,
       tokenSplit: number = 0,
+      overridStrategy?: UTXOStrategy,
     ) => {
       logConfig({
         campaignConfig,
@@ -166,6 +170,7 @@ export const useCompileCampaign = (
         wallet,
         campaignConfig.walletAddress,
         currency,
+        overridStrategy ?? strategy
       );
 
       tx.setMetadata(0, {
@@ -201,8 +206,11 @@ export const useCompileCampaign = (
   };
 };
 
+
 useCompileCampaign.PropTypes = {
   campaignKey: PropTypes.string,
+  tag: PropTypes.string,
+  strategy: UTXOStrategyType,
 };
 
 useCompileCampaign.defaultProps = {};

@@ -20,7 +20,7 @@ type IUseProject = {
  */
 
 export const useProject = (): IUseProject => {
-  const { wallet, connected } = useWallet();
+  const { wallet } = useWallet();
 
   const [isFetching, setIsFetching] = useState(true);
 
@@ -45,8 +45,7 @@ export const useProject = (): IUseProject => {
       process.env.NEXT_PUBLIC_VELOCITY_API_KEY ?? '',
     );
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_VELOCITY_API}/activity${
-        stakeKey ? `/${stakeKey[0]}` : ''
+      `${process.env.NEXT_PUBLIC_VELOCITY_API}/activity${stakeKey ? `/${stakeKey[0]}` : ''
       }`,
       { headers: requestHeaders },
     );

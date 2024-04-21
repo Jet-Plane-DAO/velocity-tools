@@ -4,6 +4,8 @@ import { useWallet } from '@meshsdk/react';
 import { useCampaignAssets } from '../useCampaignAssets';
 import PropTypes from 'prop-types';
 import {
+  UTXOStrategy,
+  UTXOStrategyType,
   logConfig,
   logDebugMessage,
   noAssetsAdaAmount,
@@ -16,8 +18,8 @@ import { fetchCheck, fetchQuote } from '../../helpers/quote';
 
 type IUseCraftingCampaign = {
   check: (includeItems?: boolean) => void;
-  craft: (planId: string, input: any[], concurrent: number, tokenSplit?: number) => Promise<string>;
-  claim: (craftId: string) => Promise<string>;
+  craft: (planId: string, input: any[], concurrent: number, tokenSplit: number, overridStrategy?: UTXOStrategy) => Promise<string>;
+  claim: (craftId: string, overridStrategy?: UTXOStrategy) => Promise<string>;
   quote: (planId: string, inputUnits: string[], concurrent: number, tokenSplit?: number) => Promise<any>;
   campaignConfig: any;
   craftingData: any;
@@ -36,6 +38,8 @@ export enum CraftingStatusEnum {
   UPGRADING = 'UPGRADING',
   UPGRADE_PENDING = 'UPGRADE_PENDING',
 }
+
+
 
 /**
  * Velocity Tools Crafting Campaign Hook
@@ -84,6 +88,7 @@ export enum CraftingStatusEnum {
 export const useCraftingCampaign = (
   campaignKey?: string,
   tag?: string,
+  strategy: UTXOStrategy = UTXOStrategy.ISOLATED,
 ): IUseCraftingCampaign => {
   const { craftingData, setCraftingData, availableBP } = useCampaignAssets();
   const [status, setStatus] = useState<CraftingStatusEnum>(CraftingStatusEnum.INIT);
@@ -129,6 +134,7 @@ export const useCraftingCampaign = (
       selectedInputs: any[],
       concurrent: number = 1,
       tokenSplit: number = 0,
+      overridStrategy?: UTXOStrategy,
     ) => {
       logConfig({
         campaignConfig,
@@ -166,6 +172,7 @@ export const useCraftingCampaign = (
         wallet,
         campaignConfig.walletAddress,
         currency,
+        overridStrategy ?? strategy
       );
 
       tx.setMetadata(0, {
@@ -191,7 +198,8 @@ export const useCraftingCampaign = (
   );
 
   const claim = useCallback(
-    async (craftId: string) => {
+    async (craftId: string,
+      overrideStrategy?: UTXOStrategy) => {
       if (!connected) {
         throw new Error('Wallet not connected');
       }
@@ -212,6 +220,7 @@ export const useCraftingCampaign = (
         wallet,
         campaignConfig.walletAddress,
         currency,
+        overrideStrategy ?? strategy
       );
       tx.setMetadata(0, { t: 'claim', cid: craftId });
 
@@ -223,27 +232,10 @@ export const useCraftingCampaign = (
     [connected, wallet, status, campaignConfig, craftingData],
   );
 
-  // const upgrade = useCallback(
-  //   async (upgradeUnits: string[]) => {
-  //     // if (!connected) {
-  //     //   throw new Error('Wallet not connected');
-  //     // }
-  //     // setStatus(CraftingStatusEnum.UPGRADING);
-  //     // const tx = new Transaction({ initiator: wallet });
-  //     // await sendAssets(10, 0, upgradeUnits, tx, wallet, campaignConfig);
-  //     // tx.setMetadata(0, { t: 'upgrade' });
-  //     // const hash = await submitTx(tx, wallet);
-  //     // setStatus(CraftingStatusEnum.UPGRADE_PENDING);
-  //     // return hash;
-  //   },
-  //   [connected, wallet, status, campaignConfig, craftingData],
-  // );
-
   return {
     check,
     craft,
     claim,
-    // upgrade,
     campaignConfig,
     status,
     craftingData,
@@ -254,6 +246,8 @@ export const useCraftingCampaign = (
 
 useCraftingCampaign.PropTypes = {
   campaignKey: PropTypes.string,
+  tag: PropTypes.string,
+  strategy: UTXOStrategyType,
 };
 
 useCraftingCampaign.defaultProps = {};

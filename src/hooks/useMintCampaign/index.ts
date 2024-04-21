@@ -4,6 +4,8 @@ import { useWallet } from '@meshsdk/react';
 import { useCampaignAssets } from '../useCampaignAssets';
 import PropTypes from 'prop-types';
 import {
+  UTXOStrategy,
+  UTXOStrategyType,
   logDebugMessage,
   noAssetsAdaAmount,
   sendAssets,
@@ -15,7 +17,7 @@ import { fetchCheck, fetchQuote } from '../../helpers/quote';
 
 type IUseMintCampaign = {
   check: (includeItems?: boolean) => void;
-  mint: (planId: string, input: any[], concurrent: number, tokenSplit?: number) => void;
+  mint: (planId: string, input: any[], concurrent: number, tokenSplit: number, overrideStrategy?: UTXOStrategy) => void;
   quote: (planId: string, inputUnits: string[], concurrent: number, tokenSplit?: number) => Promise<any>;
   campaignConfig: any;
   craftingData: any;
@@ -80,7 +82,11 @@ export enum MintStatusEnum {
  *    }
  */
 
-export const useMintCampaign = (campaignKey?: string): IUseMintCampaign => {
+export const useMintCampaign = (
+  campaignKey?: string,
+  tag?: string,
+  strategy: UTXOStrategy = UTXOStrategy.ISOLATED,
+): IUseMintCampaign => {
   const { craftingData, setCraftingData, availableBP } = useCampaignAssets();
   const [status, setStatus] = useState<MintStatusEnum>(MintStatusEnum.INIT);
   const [campaignConfig, setConfigData] = useState<any | null>(null);
@@ -94,7 +100,7 @@ export const useMintCampaign = (campaignKey?: string): IUseMintCampaign => {
     logDebugMessage(`Checking campaign ${campaignKey}`);
     const addresses = await wallet.getRewardAddresses();
     const stakeKey = addresses[0];
-    const quote = await fetchCheck(stakeKey, includeItems, campaignKey);
+    const quote = await fetchCheck(stakeKey, includeItems, campaignKey, tag);
     setCraftingData(quote?.status || { crafts: [], mints: [], locked: [] });
     setConfigData(quote.config);
     setStatus(MintStatusEnum.READY);
@@ -124,6 +130,7 @@ export const useMintCampaign = (campaignKey?: string): IUseMintCampaign => {
       selectedInputs: any[],
       concurrent: number = 1,
       tokenSplit: number = 0,
+      overrideStrategy?: UTXOStrategy,
     ) => {
       const plan = validatePlan(connected, campaignConfig, planId, selectedInputs);
       const quoteResponse = await quote(
@@ -149,6 +156,7 @@ export const useMintCampaign = (campaignKey?: string): IUseMintCampaign => {
         wallet,
         campaignConfig.walletAddress,
         currency,
+        overrideStrategy ?? strategy
       );
 
       tx.setMetadata(0, { t: 'mint', p: planId, c: concurrent, s: `${tokenSplit}` });
@@ -180,6 +188,8 @@ export const useMintCampaign = (campaignKey?: string): IUseMintCampaign => {
 
 useMintCampaign.PropTypes = {
   campaignKey: PropTypes.string,
+  tag: PropTypes.string,
+  strategy: UTXOStrategyType,
 };
 
 useMintCampaign.defaultProps = {};

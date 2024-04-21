@@ -17,3 +17,5 @@ export {
   toOffChainPolicy,
   toOffChainUnit,
 } from './helpers/offchain';
+
+export { UTXOStrategy } from './helpers/tx';

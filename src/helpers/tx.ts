@@ -1,6 +1,19 @@
 import { Asset, BrowserWallet, Transaction, keepRelevant } from '@meshsdk/core';
 import { LOVELACE_MULTIPLIER } from './ada';
 import { isPolicyOffChain } from './offchain';
+import PropTypes from 'prop-types'
+
+
+export enum UTXOStrategy {
+  ISOLATED = 'ISOLATED',
+  KITCHEN_SINK = 'KITCHEN_SINK',
+  DEFAULT = 'DEFAULT',
+}
+
+
+export const UTXOStrategyType = PropTypes.oneOf(
+  Object.values(UTXOStrategy) as UTXOStrategy[]
+);
 
 const MIN_ADA_TO_RETURN = 1500000;
 
@@ -51,20 +64,12 @@ export const validatePlan = (
   return plan;
 };
 
-export const sendAssets = async (
-  adaAmount: number,
-  nativeTokenAmount: number,
-  assetUnits: string[],
-  tx: Transaction,
-  wallet: BrowserWallet,
-  walletAddress: string,
-  nativeTokenAsset: string,
-) => {
+const setIsolatedInputs = async (wallet: BrowserWallet, assetUnits: string[], nativeToken: { amount: number, asset: string }, adaAmount: number) => {
   const utxos = await wallet.getUtxos();
 
   const assetMap = new Map();
 
-  if (nativeTokenAmount > 0 || assetUnits?.length) {
+  if (nativeToken.amount > 0 || assetUnits?.length) {
     if (adaAmount > 0) {
       if (debug)
         console.log(
@@ -81,10 +86,10 @@ export const sendAssets = async (
       assetMap.set('lovelace', `${Math.round(2 * LOVELACE_MULTIPLIER)}`);
     }
 
-    if (nativeTokenAmount > 0) {
+    if (nativeToken.amount > 0) {
       if (debug)
-        console.log('[set token]', `${nativeTokenAmount} ${nativeTokenAsset}`);
-      assetMap.set(nativeTokenAsset, `${nativeTokenAmount}`);
+        console.log('[set token]', `${nativeToken.amount} ${nativeToken.asset}`);
+      assetMap.set(nativeToken.asset, `${nativeToken.amount}`);
     }
 
     if (assetUnits?.length) {
@@ -104,18 +109,42 @@ export const sendAssets = async (
 
     const inputs = relevant?.length ? relevant : utxos;
     if (debug) console.log(`[set inputs]`, inputs);
+    return inputs;
+  }
+  return [];
+}
+
+
+export const sendAssets = async (
+  adaAmount: number,
+  nativeTokenAmount: number,
+  assetUnits: string[],
+  tx: Transaction,
+  wallet: BrowserWallet,
+  walletAddress: string,
+  nativeTokenAsset?: string,
+  strategy: UTXOStrategy = UTXOStrategy.DEFAULT,
+) => {
+  if (strategy === UTXOStrategy.ISOLATED) {
+    const inputs = await setIsolatedInputs(wallet, assetUnits, { amount: nativeTokenAmount, asset: nativeTokenAsset }, adaAmount);
+    if (debug) console.log(`[isolated inputs]`, inputs);
     tx.setTxInputs(inputs);
   }
 
+  if (strategy === UTXOStrategy.KITCHEN_SINK) {
+    const utxos = await wallet.getUtxos();
+    if (debug) console.log(`[kitchen sink inputs]`, utxos);
+    tx.setTxInputs(utxos);
+  }
+
+
   if (adaAmount > 0) {
+    const adaQuantity = `${Math.round(adaAmount * LOVELACE_MULTIPLIER)}`
     if (debug)
-      console.log(
-        `[send lovelace]`,
-        `${Math.round(adaAmount * LOVELACE_MULTIPLIER)}`,
-      );
+      console.log(`[send lovelace]`, adaQuantity);
     tx.sendLovelace(
       { address: walletAddress },
-      `${Math.round(adaAmount * LOVELACE_MULTIPLIER)}`,
+      adaQuantity
     );
   }
 
