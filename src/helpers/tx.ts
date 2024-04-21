@@ -103,7 +103,7 @@ const setIsolatedInputs = async (wallet: BrowserWallet, assetUnits: string[], na
       assetMap,
       utxos,
       adaAmount > 0
-        ? `${Math.round(adaAmount * LOVELACE_MULTIPLIER + MIN_ADA_TO_RETURN)}`
+        ? `${Math.round(adaAmount * LOVELACE_MULTIPLIER)}`
         : `${MIN_ADA_TO_RETURN}`,
     );
 
@@ -126,7 +126,7 @@ export const sendAssets = async (
   strategy: UTXOStrategy = UTXOStrategy.DEFAULT,
 ) => {
   if (strategy === UTXOStrategy.ISOLATED) {
-    const inputs = await setIsolatedInputs(wallet, assetUnits, { amount: nativeTokenAmount, asset: nativeTokenAsset }, adaAmount);
+    const inputs = await setIsolatedInputs(wallet, assetUnits, { amount: nativeTokenAmount, asset: nativeTokenAsset ?? "" }, adaAmount);
     if (debug) console.log(`[isolated inputs]`, inputs);
     tx.setTxInputs(inputs);
   }
@@ -153,7 +153,7 @@ export const sendAssets = async (
 
     if (nativeTokenAmount > 0)
       assets.push({
-        unit: nativeTokenAsset,
+        unit: nativeTokenAsset ?? "",
         quantity: `${nativeTokenAmount}`,
       });
 
