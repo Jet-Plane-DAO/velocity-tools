@@ -39,7 +39,7 @@
     "publish-patch": "npm run build && npm version patch && npm publish"
   },
   "peerDependencies": {
-    "@meshsdk/core": "1.5.11-beta.7",
+    "@meshsdk/core": "1.5.13",
     "@meshsdk/react": "1.1.10-beta.4",
     "react": "17.x || 18.x",
     "react-dom": "17.x || 18.x"
