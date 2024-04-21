@@ -103,7 +103,7 @@ const setIsolatedInputs = async (wallet: BrowserWallet, assetUnits: string[], na
       assetMap,
       utxos,
       adaAmount > 0
-        ? `${Math.round(adaAmount * LOVELACE_MULTIPLIER)}`
+        ? `${Math.round(adaAmount * LOVELACE_MULTIPLIER + MIN_ADA_TO_RETURN)}`
         : `${MIN_ADA_TO_RETURN}`,
     );
 
