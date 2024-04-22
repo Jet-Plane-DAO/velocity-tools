@@ -1,4 +1,4 @@
-import { Asset, BrowserWallet, Transaction, keepRelevant } from '@meshsdk/core';
+import { Asset, BrowserWallet, Transaction, keepRelevant, largestFirst } from '@meshsdk/core';
 import { LOVELACE_MULTIPLIER } from './ada';
 import { isPolicyOffChain } from './offchain';
 import PropTypes from 'prop-types'
@@ -7,6 +7,7 @@ import PropTypes from 'prop-types'
 export enum UTXOStrategy {
   ISOLATED = 'ISOLATED',
   KITCHEN_SINK = 'KITCHEN_SINK',
+  ADA_ONLY = 'ADA_ONLY',
   DEFAULT = 'DEFAULT',
 }
 
@@ -131,12 +132,24 @@ export const sendAssets = async (
     tx.setTxInputs(inputs);
   }
 
+  if (strategy === UTXOStrategy.ADA_ONLY) {
+    const utxos = await wallet.getUtxos();
+    const selectedUtxos = largestFirst(adaAmount, utxos, true);
+    if (debug) console.log(`[ada only inputs]`, selectedUtxos);
+    tx.setTxInputs(selectedUtxos);
+  }
+
   if (strategy === UTXOStrategy.KITCHEN_SINK) {
     const utxos = await wallet.getUtxos();
     if (debug) console.log(`[kitchen sink inputs]`, utxos);
     tx.setTxInputs(utxos);
   }
 
+  if (strategy === UTXOStrategy.KITCHEN_SINK) {
+    const utxos = await wallet.getUtxos();
+    if (debug) console.log(`[kitchen sink inputs]`, utxos);
+    tx.setTxInputs(utxos);
+  }
 
   if (adaAmount > 0) {
     const adaQuantity = `${Math.round(adaAmount * LOVELACE_MULTIPLIER)}`

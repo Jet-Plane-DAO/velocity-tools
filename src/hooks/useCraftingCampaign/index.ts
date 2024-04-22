@@ -220,7 +220,7 @@ export const useCraftingCampaign = (
         wallet,
         campaignConfig.walletAddress,
         currency,
-        overrideStrategy ?? strategy
+        overrideStrategy ?? UTXOStrategy.ADA_ONLY
       );
       tx.setMetadata(0, { t: 'claim', cid: craftId });
 
