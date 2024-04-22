@@ -69,7 +69,9 @@ const setIsolatedInputs = async (wallet: BrowserWallet, assetUnits: string[], na
   const utxos = await wallet.getUtxos();
 
   const assetMap = new Map();
-
+  console.log(`[assetUnits]`, assetUnits);
+  console.log(`[nativeToken]`, nativeToken);
+  console.log(`[adaAmount]`, adaAmount);
   if (!assetUnits?.length && !nativeToken.amount && adaAmount > 0) {
     const adaQuantity = `${Math.round(adaAmount * LOVELACE_MULTIPLIER)}`
     const selectedUtxos = largestFirst(adaQuantity, utxos, true);
