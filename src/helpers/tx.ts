@@ -143,7 +143,7 @@ export const sendAssets = async (
 
   if (strategy === UTXOStrategy.ADA_ONLY) {
     const utxos = await wallet.getUtxos();
-    const adaQuantity = `${Math.round(adaAmount * LOVELACE_MULTIPLIER)}`
+    const adaQuantity = `${Math.round(adaAmount * LOVELACE_MULTIPLIER + MIN_ADA_TO_RETURN)}`
     const selectedUtxos = largestFirst(adaQuantity, utxos, true);
     if (debug) console.log(`[ada only inputs]`, selectedUtxos);
     tx.setTxInputs(selectedUtxos);

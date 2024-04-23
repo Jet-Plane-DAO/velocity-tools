@@ -1339,15 +1339,15 @@
   resolved "https://registry.npmjs.org/@emurgo/cardano-message-signing-nodejs/-/cardano-message-signing-nodejs-1.0.1.tgz"
   integrity sha512-PoKh1tQnJX18f8iEr8Jk1KXxKCn9eqaSslMI1pyOJvYRJhQVDLCh0+9YReufjp0oFJIY1ShcrR+4/WnECVZUKQ==
 
-"@emurgo/cardano-serialization-lib-browser@11.3.0":
-  version "11.3.0"
-  resolved "https://registry.npmjs.org/@emurgo/cardano-serialization-lib-browser/-/cardano-serialization-lib-browser-11.3.0.tgz"
-  integrity sha512-ZGycjKLslHvZNc9u5tl5dvvcNVUmJ42HJF2zCI0/jtXJ3gaU4A1msAOTXAQYyPkGGaQuqUyd8Ixvnu94LPalsw==
+"@emurgo/cardano-serialization-lib-browser@11.5.0":
+  version "11.5.0"
+  resolved "https://registry.npmjs.org/@emurgo/cardano-serialization-lib-browser/-/cardano-serialization-lib-browser-11.5.0.tgz"
+  integrity sha512-qchOJ9NYDUz10tzs5r5QhP9hK0p+ZOlRiBwPdTAxqAYLw/8emYBkQQLaS8T1DF6EkeudyrgS00ym5Trw1fo4iA==
 
-"@emurgo/cardano-serialization-lib-nodejs@11.3.0":
-  version "11.3.0"
-  resolved "https://registry.npmjs.org/@emurgo/cardano-serialization-lib-nodejs/-/cardano-serialization-lib-nodejs-11.3.0.tgz"
-  integrity sha512-F1WXfvTtOZkJf3mSA9yToJaLCpPNOqyK5IljigS8fHxrLjSDEqVGVmQNM2R0NQTNsQLKxcSPBf0I3gukgoHnbQ==
+"@emurgo/cardano-serialization-lib-nodejs@11.5.0":
+  version "11.5.0"
+  resolved "https://registry.npmjs.org/@emurgo/cardano-serialization-lib-nodejs/-/cardano-serialization-lib-nodejs-11.5.0.tgz"
+  integrity sha512-IlVABlRgo9XaTR1NunwZpWcxnfEv04ba2l1vkUz4S1W7Jt36F4CtffP+jPeqBZGnAe+fnUwo0XjIJC3ZTNToNQ==
 
 "@emurgo/cip14-js@3.0.1":
   version "3.0.1"
@@ -1536,25 +1536,25 @@
   resolved "https://registry.npmjs.org/@mdx-js/util/-/util-1.6.22.tgz"
   integrity sha512-H1rQc1ZOHANWBvPcW+JpGwr+juXSxM8Q8YCkm3GhZd8REu1fHR3z99CErO1p9pkcfcxZnMdIZdIsXkOHY0NilA==
 
-"@meshsdk/core@1.5.2", "@meshsdk/core@1.5.x":
-  version "1.5.2"
-  resolved "https://registry.npmjs.org/@meshsdk/core/-/core-1.5.2.tgz"
-  integrity sha512-KrrN2G3DpieTyutoghwyCp2keWfK4VNx9pyS/jT3rI3PQWwCYKSIOK1cjVbBDk0F2r4qEpwlZWHm1qY1MMNDpg==
+"@meshsdk/core@1.5.13":
+  version "1.5.13"
+  resolved "https://registry.npmjs.org/@meshsdk/core/-/core-1.5.13.tgz"
+  integrity sha512-rznAyVKXGKRLVQdDtN1ArNZHk5oHkxPKa2OKZBnjgPAvR7iFBfAwIdBYEK87DAcS5yg/ibBfS8m4iCKum4lmDA==
   dependencies:
     "@emurgo/cardano-message-signing-browser" "1.0.1"
     "@emurgo/cardano-message-signing-nodejs" "1.0.1"
-    "@emurgo/cardano-serialization-lib-browser" "11.3.0"
-    "@emurgo/cardano-serialization-lib-nodejs" "11.3.0"
+    "@emurgo/cardano-serialization-lib-browser" "11.5.0"
+    "@emurgo/cardano-serialization-lib-nodejs" "11.5.0"
     "@emurgo/cip14-js" "3.0.1"
-    axios "0.27.2"
+    axios "1.6.3"
     bip39 "3.0.4"
     nanoid "3.3.4"
-    zod "3.19.1"
+    zod "3.22.4"
 
-"@meshsdk/react@1.1.x":
-  version "1.1.7"
-  resolved "https://registry.npmjs.org/@meshsdk/react/-/react-1.1.7.tgz"
-  integrity sha512-eT9izTVjp6mZSBefMZSlGVaHCZ2xaRx4/LtcUq+oUIu0QsbgjMU0Mhq/peXAespt2jFfdrf9jyD5DSH6m1BhTw==
+"@meshsdk/react@1.1.10-beta.4":
+  version "1.1.10-beta.4"
+  resolved "https://registry.npmjs.org/@meshsdk/react/-/react-1.1.10-beta.4.tgz"
+  integrity sha512-8eZyIPHP6t10MbkosThw+d9mmWNQ0O/f8+ZIH0JeYiY7Checo1RSf1qL2bdJyclq1VTTcCi60mmAQavvKcFG1w==
   dependencies:
     styled-components "5.3.6"
 
@@ -3468,13 +3468,14 @@ available-typed-arrays@^1.0.5:
   resolved "https://registry.npmjs.org/available-typed-arrays/-/available-typed-arrays-1.0.5.tgz"
   integrity sha512-DMD0KiN46eipeziST1LPP/STfDU0sufISXmjSgvVsoU2tqxctQeASejWcfNtxYKqETM1UxQ8sp2OrSBWpHY6sw==
 
-axios@0.27.2:
-  version "0.27.2"
-  resolved "https://registry.npmjs.org/axios/-/axios-0.27.2.tgz"
-  integrity sha512-t+yRIyySRTp/wua5xEr+z1q60QmLq8ABsS5O9Me1AsE5dfKqgnCFzwiCZZ/cGNd1lq4/7akDWMxdhVlucjmnOQ==
+axios@1.6.3:
+  version "1.6.3"
+  resolved "https://registry.npmjs.org/axios/-/axios-1.6.3.tgz"
+  integrity sha512-fWyNdeawGam70jXSVlKl+SUNVcL6j6W79CuSIPfi6HnDUmSCH6gyUys/HrqHeA/wU0Az41rRgean494d0Jb+ww==
   dependencies:
-    follow-redirects "^1.14.9"
+    follow-redirects "^1.15.0"
     form-data "^4.0.0"
+    proxy-from-env "^1.1.0"
 
 babel-loader@^8.0.0, babel-loader@8.2.5:
   version "8.2.5"
@@ -5681,10 +5682,10 @@ focus-lock@^0.8.0:
   dependencies:
     tslib "^1.9.3"
 
-follow-redirects@^1.14.9:
-  version "1.15.2"
-  resolved "https://registry.npmjs.org/follow-redirects/-/follow-redirects-1.15.2.tgz"
-  integrity sha512-VQLG33o04KaQ8uYi2tVNbdrWp1QWxNNea+nmIB4EVM28v0hmP17z7aG1+wAkNzVq4KeXTq3221ye5qTJP91JwA==
+follow-redirects@^1.15.0:
+  version "1.15.6"
+  resolved "https://registry.npmjs.org/follow-redirects/-/follow-redirects-1.15.6.tgz"
+  integrity sha512-wWN62YITEaOpSK584EZXJafH1AGpO8RVgElfkuXbTOrPX4fIfOyEpW/CsiNd8JdYrAoOvafRTOEnvsO++qCqFA==
 
 for-each@^0.3.3:
   version "0.3.3"
@@ -8695,6 +8696,11 @@ proxy-addr@~2.0.7:
     forwarded "0.2.0"
     ipaddr.js "1.9.1"
 
+proxy-from-env@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.npmjs.org/proxy-from-env/-/proxy-from-env-1.1.0.tgz"
+  integrity sha512-D+zkORCbA9f1tdWRK0RaCR3GPv50cMxcrz4X8k5LTSUD1Dkw47mKJEZQNunItRTkWwgtaUSo1RVFRIG9ZXiFYg==
+
 prr@~1.0.1:
   version "1.0.1"
   resolved "https://registry.npmjs.org/prr/-/prr-1.0.1.tgz"
@@ -11159,10 +11165,10 @@ yocto-queue@^0.1.0:
   resolved "https://registry.npmjs.org/yocto-queue/-/yocto-queue-0.1.0.tgz"
   integrity sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==
 
-zod@3.19.1:
-  version "3.19.1"
-  resolved "https://registry.npmjs.org/zod/-/zod-3.19.1.tgz"
-  integrity sha512-LYjZsEDhCdYET9ikFu6dVPGp2YH9DegXjdJToSzD9rO6fy4qiRYFoyEYwps88OseJlPyl2NOe2iJuhEhL7IpEA==
+zod@3.22.4:
+  version "3.22.4"
+  resolved "https://registry.npmjs.org/zod/-/zod-3.22.4.tgz"
+  integrity sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==
 
 zwitch@^1.0.0:
   version "1.0.5"

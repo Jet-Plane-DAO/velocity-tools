@@ -44,6 +44,11 @@
     "react": "17.x || 18.x",
     "react-dom": "17.x || 18.x"
   },
+  "overrides": {
+      "@meshsdk/react": {
+          "@meshsdk/core": "$@meshsdk/core"
+      }
+  },
   "devDependencies": {
     "@babel/core": "7.19.6",
     "@rollup/plugin-babel": "6.0.2",
