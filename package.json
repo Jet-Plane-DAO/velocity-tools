@@ -1,5 +1,5 @@
 {
-  "version": "1.0.168",
+  "version": "1.0.169",
   "name": "@jetplane/velocity-tools",
   "description": "Velocity tools",
   "author": "WolfRayet",
@@ -45,9 +45,9 @@
     "react-dom": "17.x || 18.x"
   },
   "overrides": {
-      "@meshsdk/react": {
-          "@meshsdk/core": "$@meshsdk/core"
-      }
+    "@meshsdk/react": {
+      "@meshsdk/core": "$@meshsdk/core"
+    }
   },
   "devDependencies": {
     "@babel/core": "7.19.6",
