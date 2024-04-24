@@ -132,7 +132,7 @@ export const useMintCampaign = (
       tokenSplit: number = 0,
       overrideStrategy?: UTXOStrategy,
     ) => {
-      const plan = validatePlan(connected, campaignConfig, planId, selectedInputs);
+      validatePlan(connected, campaignConfig, planId, selectedInputs);
       const quoteResponse = await quote(
         planId,
         selectedInputs.map((i) => i.unit),
