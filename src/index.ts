@@ -8,6 +8,7 @@ export {
   RecyclerStatusEnum,
 } from './hooks/useRecyclerCampaign/';
 export { useMintCampaign, MintStatusEnum } from './hooks/useMintCampaign/';
+export { useUpgradeCampaign, UpgradeStatusEnum } from './hooks/useUpgradeCampaign/';
 export { useCompileCampaign, CompileStatusEnum } from './hooks/useCompileCampaign/';
 export { useProject } from './hooks/useProject/';
 

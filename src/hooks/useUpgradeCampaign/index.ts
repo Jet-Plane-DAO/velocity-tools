@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import {
   UTXOStrategy,
   UTXOStrategyType,
-  logConfig,
   logDebugMessage,
   noAssetsAdaAmount,
   sendAssets,
@@ -16,17 +15,17 @@ import {
 } from '../../helpers/tx';
 import { fetchCheck, fetchQuote } from '../../helpers/quote';
 
-type IUseCompileCampaign = {
+type IUseUpgradeCampaign = {
   check: (includeItems?: boolean) => void;
-  compile: (planId: string, input: any[], concurrent?: number, tokenSplit?: number, overridStrategy?: UTXOStrategy) => void;
-  quote: (planId: string, inputUnits: string[], concurrent: number) => Promise<any>;
+  upgrade: (planId: string, input: any[], concurrent: number, tokenSplit: number, overrideStrategy?: UTXOStrategy) => void;
+  quote: (planId: string, inputUnits: string[], concurrent: number, tokenSplit?: number) => Promise<any>;
   campaignConfig: any;
   craftingData: any;
   availableBP: any;
-  status: CompileStatusEnum;
+  status: UpgradeStatusEnum;
 };
 
-export enum CompileStatusEnum {
+export enum UpgradeStatusEnum {
   INIT = 'INIT',
   CHECKING = 'CHECKING',
   READY = 'READY',
@@ -49,7 +48,7 @@ export enum CompileStatusEnum {
  *           The configuration and metadata for the campaign
  *
  * @property {Object} craftingData
- *           The current crafting data for selected wallet, inlcuding locked assets, crafts and mints.
+ *           The current crafting data for selected wallet, inlcuding locked assets, crafts and upgrades.
  *
  * @property {()=>void} check
  *           Check the status of the campaign and update the crafting data for the currently connected wallet
@@ -83,29 +82,28 @@ export enum CompileStatusEnum {
  *    }
  */
 
-export const useCompileCampaign = (
+export const useUpgradeCampaign = (
   campaignKey?: string,
   tag?: string,
   strategy: UTXOStrategy = UTXOStrategy.ISOLATED,
-): IUseCompileCampaign => {
+): IUseUpgradeCampaign => {
   const { craftingData, setCraftingData, availableBP } = useCampaignAssets();
-  const [status, setStatus] = useState<CompileStatusEnum>(CompileStatusEnum.INIT);
+  const [status, setStatus] = useState<UpgradeStatusEnum>(UpgradeStatusEnum.INIT);
   const [campaignConfig, setConfigData] = useState<any | null>(null);
   const { wallet, connected } = useWallet();
 
   const check = async (includeItems?: boolean) => {
-    if (!connected) {
+    if (!connected || !wallet) {
       throw new Error('Wallet not connected');
     }
-    if (!wallet) return;
+    setStatus(UpgradeStatusEnum.CHECKING);
     logDebugMessage(`Checking campaign ${campaignKey}`);
-    setStatus(CompileStatusEnum.CHECKING);
     const addresses = await wallet.getRewardAddresses();
     const stakeKey = addresses[0];
     const quote = await fetchCheck(stakeKey, includeItems, campaignKey, tag);
-    setCraftingData(quote?.status || { mints: [] });
+    setCraftingData(quote?.status || { crafts: [], upgrades: [], locked: [] });
     setConfigData(quote.config);
-    setStatus(CompileStatusEnum.READY);
+    setStatus(UpgradeStatusEnum.READY);
     return;
   };
 
@@ -119,41 +117,29 @@ export const useCompileCampaign = (
       planId,
       inputUnits,
       concurrent,
-      'compile',
+      'upgrade',
       availableBP,
       campaignKey,
       tokenSplit,
     );
   };
 
-  const compile = useCallback(
+  const upgrade = useCallback(
     async (
       planId: string,
       selectedInputs: any[],
       concurrent: number = 1,
       tokenSplit: number = 0,
-      overridStrategy?: UTXOStrategy,
+      overrideStrategy?: UTXOStrategy,
     ) => {
-      logConfig({
-        campaignConfig,
-        craftingData,
-        availableBP,
-        connected,
-        status,
-      });
-
-      const plan = validatePlan(connected, campaignConfig, planId, selectedInputs);
-
-      if (!plan) {
-        throw new Error('Plan not valid');
-      }
-
+      validatePlan(connected, campaignConfig, planId, selectedInputs);
       const quoteResponse = await quote(
         planId,
         selectedInputs.map((i) => i.unit),
         concurrent,
         tokenSplit,
       );
+
       if (!quoteResponse?.quote) throw new Error('Quote not found');
 
       const tx = new Transaction({ initiator: wallet });
@@ -170,16 +156,10 @@ export const useCompileCampaign = (
         wallet,
         campaignConfig.walletAddress,
         currency,
-        overridStrategy ?? strategy
+        overrideStrategy ?? strategy
       );
 
-      tx.setMetadata(0, {
-        t: 'compile',
-        p: planId,
-        c: concurrent,
-        s: `${tokenSplit}`,
-      });
-
+      tx.setMetadata(0, { t: 'upgrade', p: planId, c: concurrent, s: `${tokenSplit}` });
       let ix = 1;
       selectedInputs.forEach((i) => {
         ix = setAddressMetadata(tx, ix, i.unit);
@@ -197,7 +177,7 @@ export const useCompileCampaign = (
 
   return {
     check,
-    compile,
+    upgrade,
     campaignConfig,
     status,
     craftingData,
@@ -206,11 +186,10 @@ export const useCompileCampaign = (
   };
 };
 
-
-useCompileCampaign.PropTypes = {
+useUpgradeCampaign.PropTypes = {
   campaignKey: PropTypes.string,
   tag: PropTypes.string,
   strategy: UTXOStrategyType,
 };
 
-useCompileCampaign.defaultProps = {};
+useUpgradeCampaign.defaultProps = {};
