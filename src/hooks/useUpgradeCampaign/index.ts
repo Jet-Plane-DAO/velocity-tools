@@ -17,7 +17,7 @@ import { fetchCheck, fetchQuote } from '../../helpers/quote';
 
 type IUseUpgradeCampaign = {
   check: (includeItems?: boolean) => void;
-  upgrade: (planId: string, input: any[], concurrent: number, tokenSplit: number, overrideStrategy?: UTXOStrategy) => void;
+  upgrade: (planId: string, input: any[], concurrent: number, tokenSplit: number, overrideStrategy?: UTXOStrategy) => Promise<string>;
   quote: (planId: string, inputUnits: string[], concurrent: number, tokenSplit?: number) => Promise<any>;
   campaignConfig: any;
   craftingData: any;
