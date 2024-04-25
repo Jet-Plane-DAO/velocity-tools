@@ -1,4 +1,4 @@
-import { Asset, BrowserWallet, Transaction, keepRelevant, largestFirst } from '@meshsdk/core';
+import { Asset, BrowserWallet, Transaction, UTxO, keepRelevant, largestFirst } from '@meshsdk/core';
 import { LOVELACE_MULTIPLIER } from './ada';
 import { isPolicyOffChain } from './offchain';
 import PropTypes from 'prop-types'
@@ -16,7 +16,6 @@ export const UTXOStrategyType = PropTypes.oneOf(
   Object.values(UTXOStrategy) as UTXOStrategy[]
 );
 
-const MIN_ADA_TO_RETURN = 1500000;
 
 const debug = process.env.NEXT_PUBLIC_ENABLE_DEBUG === 'true';
 
@@ -65,6 +64,34 @@ export const validatePlan = (
   return plan;
 };
 
+
+const calculateMinAda = async (nativeTokenAmount: number, assetUnits: string[], nativeTokenAsset?: string) => {
+
+  const coinSize = 2
+  const minUTxOValue = 1000000;
+  const utxoEntrySizeWithoutVal = 27
+  const adaOnlyUTxOSize = utxoEntrySizeWithoutVal + coinSize
+
+  const quot = (a: number, b: number) => Math.floor(a / b)
+  const roundupBytesToWords = (bytes: number) => quot(bytes + 7, 8)
+
+  const assets = []
+
+  if (assetUnits.length) assets.push(...assetUnits)
+  if (nativeTokenAmount > 0) assets.push(nativeTokenAsset)
+
+  const policyIds = new Set(assets.map((a) => `${a}`.slice(0, 56)))
+  const sumAssetNameLengths = assets.reduce((acc: number, a: any) => acc + (a?.length || 0) > 56 ? `${a}`.slice(56).length : 0, 0)
+  const pidSize = policyIds.size * 28
+
+  const size = 6 + roundupBytesToWords(((assets.length) * 12) + (sumAssetNameLengths) + ((policyIds.size) * pidSize))
+
+  const min = Math.max(minUTxOValue, quot(minUTxOValue, adaOnlyUTxOSize) * (utxoEntrySizeWithoutVal + size))
+
+  console.log(`[minAdaAmount]`, min);
+  return min
+}
+
 const setIsolatedInputs = async (wallet: BrowserWallet, assetUnits: string[], nativeToken: { amount: number, asset: string }, adaAmount: number) => {
   const utxos = await wallet.getUtxos();
 
@@ -80,21 +107,21 @@ const setIsolatedInputs = async (wallet: BrowserWallet, assetUnits: string[], na
   };
 
   if (nativeToken.amount > 0 || assetUnits?.length) {
-    if (adaAmount > 0) {
-      if (debug)
-        console.log(
-          '[set lovelace]',
-          `${Math.round(adaAmount * LOVELACE_MULTIPLIER + MIN_ADA_TO_RETURN)}`,
-        );
-      assetMap.set(
-        'lovelace',
-        `${Math.round(adaAmount * LOVELACE_MULTIPLIER + MIN_ADA_TO_RETURN)}`,
-      );
-    } else {
-      if (debug)
-        console.log('[set lovelace]', `${Math.round(2 * LOVELACE_MULTIPLIER)}`);
-      assetMap.set('lovelace', `${Math.round(2 * LOVELACE_MULTIPLIER)}`);
-    }
+    // if (adaAmount > 0) {
+    //   if (debug)
+    //     console.log(
+    //       '[set lovelace]',
+    //       `${Math.round(adaAmount * LOVELACE_MULTIPLIER + MIN_ADA_TO_RETURN)}`,
+    //     );
+    //   assetMap.set(
+    //     'lovelace',
+    //     `${Math.round(adaAmount * LOVELACE_MULTIPLIER + MIN_ADA_TO_RETURN)}`,
+    //   );
+    // } else {
+    //   if (debug)
+    //     console.log('[set lovelace]', `${Math.round(2 * LOVELACE_MULTIPLIER)}`);
+    //   assetMap.set('lovelace', `${Math.round(2 * LOVELACE_MULTIPLIER)}`);
+    // }
 
     if (nativeToken.amount > 0) {
       if (debug)
@@ -112,9 +139,7 @@ const setIsolatedInputs = async (wallet: BrowserWallet, assetUnits: string[], na
     const relevant = keepRelevant(
       assetMap,
       utxos,
-      adaAmount > 0
-        ? `${Math.round(adaAmount * LOVELACE_MULTIPLIER + MIN_ADA_TO_RETURN)}`
-        : `${MIN_ADA_TO_RETURN}`,
+      `${Math.round(adaAmount * LOVELACE_MULTIPLIER + await calculateMinAda(nativeToken.amount, assetUnits, nativeToken.asset))}`
     );
 
     const inputs = relevant?.length ? relevant : utxos;
@@ -135,30 +160,37 @@ export const sendAssets = async (
   nativeTokenAsset?: string,
   strategy: UTXOStrategy = UTXOStrategy.DEFAULT,
 ) => {
+  let inputs: UTxO[] = []
   if (strategy === UTXOStrategy.ISOLATED) {
-    const inputs = await setIsolatedInputs(wallet, assetUnits, { amount: nativeTokenAmount, asset: nativeTokenAsset ?? "" }, adaAmount);
+    inputs = await setIsolatedInputs(wallet, assetUnits, { amount: nativeTokenAmount, asset: nativeTokenAsset ?? "" }, adaAmount);
     if (debug) console.log(`[isolated inputs]`, inputs);
-    tx.setTxInputs(inputs);
   }
-
   if (strategy === UTXOStrategy.ADA_ONLY) {
     const utxos = await wallet.getUtxos();
-    const adaQuantity = `${Math.round(adaAmount * LOVELACE_MULTIPLIER + MIN_ADA_TO_RETURN)}`
-    const selectedUtxos = largestFirst(adaQuantity, utxos, true);
-    if (debug) console.log(`[ada only inputs]`, selectedUtxos);
-    tx.setTxInputs(selectedUtxos);
+    const adaQuantity = `${Math.round(adaAmount * LOVELACE_MULTIPLIER)}`
+    inputs = largestFirst(adaQuantity, utxos, true);
+    if (debug) console.log(`[ada only inputs]`, inputs);
   }
 
   if (strategy === UTXOStrategy.KITCHEN_SINK) {
-    const utxos = await wallet.getUtxos();
-    if (debug) console.log(`[kitchen sink inputs]`, utxos);
-    tx.setTxInputs(utxos);
+    inputs = await wallet.getUtxos();
+    if (debug) console.log(`[kitchen sink inputs]`, inputs);
   }
 
-  if (strategy === UTXOStrategy.KITCHEN_SINK) {
+  if (strategy === UTXOStrategy.DEFAULT) {
     const utxos = await wallet.getUtxos();
     if (debug) console.log(`[kitchen sink inputs]`, utxos);
-    tx.setTxInputs(utxos);
+  }
+
+  if (strategy !== UTXOStrategy.DEFAULT) {
+    const outputs = inputs.flatMap((i) => i.output.amount)
+    const minAda = await calculateMinAda(nativeTokenAmount, [...assetUnits, ...outputs.filter(x => x.unit !== 'lovelace').map(x => x.unit)], nativeTokenAsset);
+    if (debug) console.log(`[minAda]`, minAda);
+    if (minAda < parseInt(outputs.find(x => x.unit === 'lovelace')?.quantity || '0')) {
+      if (debug) console.log(`[minAda Too Low]`, minAda);
+      inputs = await setIsolatedInputs(wallet, [...assetUnits, ...outputs.map(x => x.unit)], { amount: nativeTokenAmount, asset: nativeTokenAsset ?? "" }, adaAmount);
+    }
+    tx.setTxInputs(inputs);
   }
 
   if (adaAmount > 0) {
