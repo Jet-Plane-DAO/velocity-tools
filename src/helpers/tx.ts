@@ -164,10 +164,9 @@ export const sendAssets = async (
     if (debug) console.log(`[default inputs]`, utxos);
   } else {
     const outputs = inputs.flatMap((i) => i.output.amount)
-    const minAda = adaAmount * LOVELACE_MULTIPLIER + await calculateMinAda(nativeTokenAmount, [...assetUnits, ...outputs.filter(x => x.unit !== 'lovelace').map(x => x.unit)], nativeTokenAsset);
+    const minAda = (adaAmount * LOVELACE_MULTIPLIER) + await calculateMinAda(nativeTokenAmount, [...assetUnits, ...outputs.filter(x => x.unit !== 'lovelace').map(x => x.unit)], nativeTokenAsset);
     if (debug) console.log(`[minAda]`, minAda);
-    console.log(minAda, parseInt(outputs.find(x => x.unit === 'lovelace')?.quantity || '0'));
-    if (minAda < parseInt(outputs.find(x => x.unit === 'lovelace')?.quantity || '0')) {
+    if (parseInt(outputs.find(x => x.unit === 'lovelace')?.quantity || '0') < minAda) {
       if (debug) console.log(`[minAda Too Low]`, minAda);
       inputs = await setIsolatedInputs(wallet, [...assetUnits, ...outputs.map(x => x.unit)], { amount: nativeTokenAmount, asset: nativeTokenAsset ?? "" }, adaAmount);
     }
