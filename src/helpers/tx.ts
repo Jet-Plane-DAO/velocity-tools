@@ -179,13 +179,12 @@ export const sendAssets = async (
 
   if (strategy === UTXOStrategy.DEFAULT) {
     const utxos = await wallet.getUtxos();
-    if (debug) console.log(`[kitchen sink inputs]`, utxos);
-  }
-
-  if (strategy !== UTXOStrategy.DEFAULT) {
+    if (debug) console.log(`[default inputs]`, utxos);
+  } else {
     const outputs = inputs.flatMap((i) => i.output.amount)
-    const minAda = await calculateMinAda(nativeTokenAmount, [...assetUnits, ...outputs.filter(x => x.unit !== 'lovelace').map(x => x.unit)], nativeTokenAsset);
+    const minAda = adaAmount * LOVELACE_MULTIPLIER + await calculateMinAda(nativeTokenAmount, [...assetUnits, ...outputs.filter(x => x.unit !== 'lovelace').map(x => x.unit)], nativeTokenAsset);
     if (debug) console.log(`[minAda]`, minAda);
+    console.log(minAda, parseInt(outputs.find(x => x.unit === 'lovelace')?.quantity || '0'));
     if (minAda < parseInt(outputs.find(x => x.unit === 'lovelace')?.quantity || '0')) {
       if (debug) console.log(`[minAda Too Low]`, minAda);
       inputs = await setIsolatedInputs(wallet, [...assetUnits, ...outputs.map(x => x.unit)], { amount: nativeTokenAmount, asset: nativeTokenAsset ?? "" }, adaAmount);
@@ -206,19 +205,18 @@ export const sendAssets = async (
   if (nativeTokenAmount > 0 || assetUnits?.length) {
     const assets: Asset[] = assetUnits.map((a: any) => ({ unit: a, quantity: '1' }));
 
-    if (nativeTokenAmount > 0)
+    if (nativeTokenAmount > 0) {
+      if (debug) console.log(`[send token]`, `${nativeTokenAmount} ${nativeTokenAsset}`);
       assets.push({
         unit: nativeTokenAsset ?? "",
         quantity: `${nativeTokenAmount}`,
       });
-
-    if (nativeTokenAmount > 0 && debug) {
-      console.log(`[send token]`, `${nativeTokenAmount} ${nativeTokenAsset}`);
     }
-    if (assetUnits?.length && debug) {
+
+    if (assets.length) {
+      tx.sendAssets({ address: walletAddress }, assets);
       if (debug) assetUnits.map((a) => console.log(`[send ${a}]`, `1`));
     }
-    if (assets.length) tx.sendAssets({ address: walletAddress }, assets);
   }
   return;
 };
