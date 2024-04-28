@@ -131,7 +131,6 @@ const setIsolatedInputs = async (wallet: BrowserWallet, assetUnits: string[], na
   return [];
 }
 
-
 export const sendAssets = async (
   adaAmount: number,
   nativeTokenAmount: number,
