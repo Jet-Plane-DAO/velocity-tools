@@ -96,9 +96,6 @@ const setIsolatedInputs = async (wallet: BrowserWallet, assetUnits: string[], na
   const utxos = await wallet.getUtxos();
 
   const assetMap = new Map();
-  console.log(`[assetUnits]`, assetUnits);
-  console.log(`[nativeToken]`, nativeToken);
-  console.log(`[adaAmount]`, adaAmount);
   if (!assetUnits?.length && !nativeToken.amount && adaAmount > 0) {
     const adaQuantity = `${Math.round(adaAmount * LOVELACE_MULTIPLIER)}`
     const selectedUtxos = largestFirst(adaQuantity, utxos, true);
@@ -107,31 +104,16 @@ const setIsolatedInputs = async (wallet: BrowserWallet, assetUnits: string[], na
   };
 
   if (nativeToken.amount > 0 || assetUnits?.length) {
-    // if (adaAmount > 0) {
-    //   if (debug)
-    //     console.log(
-    //       '[set lovelace]',
-    //       `${Math.round(adaAmount * LOVELACE_MULTIPLIER + MIN_ADA_TO_RETURN)}`,
-    //     );
-    //   assetMap.set(
-    //     'lovelace',
-    //     `${Math.round(adaAmount * LOVELACE_MULTIPLIER + MIN_ADA_TO_RETURN)}`,
-    //   );
-    // } else {
-    //   if (debug)
-    //     console.log('[set lovelace]', `${Math.round(2 * LOVELACE_MULTIPLIER)}`);
-    //   assetMap.set('lovelace', `${Math.round(2 * LOVELACE_MULTIPLIER)}`);
-    // }
 
     if (nativeToken.amount > 0) {
       if (debug)
-        console.log('[set token]', `${nativeToken.amount} ${nativeToken.asset}`);
-      assetMap.set(nativeToken.asset, `${nativeToken.amount}`);
+        // console.log('[set token]', `${nativeToken.amount} ${nativeToken.asset}`);
+        assetMap.set(nativeToken.asset, `${nativeToken.amount}`);
     }
 
     if (assetUnits?.length) {
       assetUnits.map((a: any) => {
-        if (debug) console.log(`[set ${a}]`, `1`);
+        // if (debug) console.log(`[set ${a}]`, `1`);
         return assetMap.set(a, `1`);
       });
     }
@@ -143,7 +125,7 @@ const setIsolatedInputs = async (wallet: BrowserWallet, assetUnits: string[], na
     );
 
     const inputs = relevant?.length ? relevant : utxos;
-    if (debug) console.log(`[set inputs]`, inputs);
+    // if (debug) console.log(`[set inputs]`, inputs);
     return inputs;
   }
   return [];
