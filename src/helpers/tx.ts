@@ -96,6 +96,7 @@ const setIsolatedInputs = async (wallet: BrowserWallet, assetUnits: string[], na
   const utxos = await wallet.getUtxos();
 
   const assetMap = new Map();
+
   if (!assetUnits?.length && !nativeToken.amount && adaAmount > 0) {
     const adaQuantity = `${Math.round(adaAmount * LOVELACE_MULTIPLIER)}`
     const selectedUtxos = largestFirst(adaQuantity, utxos, true);
@@ -106,9 +107,8 @@ const setIsolatedInputs = async (wallet: BrowserWallet, assetUnits: string[], na
   if (nativeToken.amount > 0 || assetUnits?.length) {
 
     if (nativeToken.amount > 0) {
-      if (debug)
-        // console.log('[set token]', `${nativeToken.amount} ${nativeToken.asset}`);
-        assetMap.set(nativeToken.asset, `${nativeToken.amount}`);
+      if (debug) console.log('[set token]', `${nativeToken.amount} ${nativeToken.asset}`);
+      assetMap.set(nativeToken.asset, `${nativeToken.amount}`);
     }
 
     if (assetUnits?.length) {
@@ -142,10 +142,12 @@ export const sendAssets = async (
   strategy: UTXOStrategy = UTXOStrategy.DEFAULT,
 ) => {
   let inputs: UTxO[] = []
+
   if (strategy === UTXOStrategy.ISOLATED) {
     inputs = await setIsolatedInputs(wallet, assetUnits, { amount: nativeTokenAmount, asset: nativeTokenAsset ?? "" }, adaAmount);
     if (debug) console.log(`[isolated inputs]`, inputs);
   }
+
   if (strategy === UTXOStrategy.ADA_ONLY) {
     const utxos = await wallet.getUtxos();
     const adaQuantity = `${Math.round(adaAmount * LOVELACE_MULTIPLIER)}`
@@ -164,9 +166,8 @@ export const sendAssets = async (
   } else {
     const outputs = inputs.flatMap((i) => i.output.amount)
     const minAda = (adaAmount * LOVELACE_MULTIPLIER) + await calculateMinAda(nativeTokenAmount, [...assetUnits, ...outputs.filter(x => x.unit !== 'lovelace').map(x => x.unit)], nativeTokenAsset);
-    if (debug) console.log(`[minAda]`, minAda);
     if (parseInt(outputs.find(x => x.unit === 'lovelace')?.quantity || '0') < minAda) {
-      if (debug) console.log(`[minAda Too Low]`, minAda);
+      if (debug) console.log(`[min_ada Too low - recalculating]`, minAda);
       inputs = await setIsolatedInputs(wallet, [...assetUnits, ...outputs.map(x => x.unit)], { amount: nativeTokenAmount, asset: nativeTokenAsset ?? "" }, adaAmount);
     }
     tx.setTxInputs(inputs);
@@ -174,8 +175,7 @@ export const sendAssets = async (
 
   if (adaAmount > 0) {
     const adaQuantity = `${Math.round(adaAmount * LOVELACE_MULTIPLIER)}`
-    if (debug)
-      console.log(`[send lovelace]`, adaQuantity);
+    if (debug) console.log(`[send lovelace]`, adaQuantity);
     tx.sendLovelace(
       { address: walletAddress },
       adaQuantity

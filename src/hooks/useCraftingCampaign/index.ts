@@ -20,6 +20,7 @@ type IUseCraftingCampaign = {
   check: (includeItems?: boolean) => void;
   craft: (planId: string, input: any[], concurrent: number, tokenSplit: number, overridStrategy?: UTXOStrategy) => Promise<string>;
   claim: (craftId: string, overridStrategy?: UTXOStrategy) => Promise<string>;
+  bulkClaim: (craftIds: string[], overridStrategy?: UTXOStrategy) => Promise<string[]>;
   quote: (planId: string, inputUnits: string[], concurrent: number, tokenSplit?: number) => Promise<any>;
   campaignConfig: any;
   craftingData: any;
@@ -232,10 +233,51 @@ export const useCraftingCampaign = (
     [connected, wallet, status, campaignConfig, craftingData],
   );
 
+
+  const bulkClaim = useCallback(
+    async (craftIds: string[],
+      overrideStrategy?: UTXOStrategy) => {
+      if (!connected) {
+        throw new Error('Wallet not connected');
+      }
+      setStatus(CraftingStatusEnum.CLAIMING);
+
+      const crafts = craftingData.crafts.filter((c: any) => craftIds.includes(c.id));
+      if (!crafts?.length) throw new Error('Craft not found');
+
+      const tx = new Transaction({ initiator: wallet });
+
+      const currency = crafts[0].quote?.currency || 'lovelace';
+      const fee = Math.max(...crafts.map((c: any) => c.quote.fee));
+
+      await sendAssets(
+        fee,
+        0,
+        [],
+        tx,
+        wallet,
+        campaignConfig.walletAddress,
+        currency,
+        overrideStrategy ?? UTXOStrategy.ADA_ONLY
+      );
+      tx.setMetadata(0, { t: 'multi-claim' });
+      for (let index = 1; index <= craftIds.length; index++) {
+        tx.setMetadata(index, { cid: craftIds[index] });
+      }
+
+      await submitTx(tx, wallet);
+
+      setStatus(CraftingStatusEnum.CLAIM_PENDING);
+      return craftIds;
+    },
+    [connected, wallet, status, campaignConfig, craftingData],
+  );
+
   return {
     check,
     craft,
     claim,
+    bulkClaim,
     campaignConfig,
     status,
     craftingData,
