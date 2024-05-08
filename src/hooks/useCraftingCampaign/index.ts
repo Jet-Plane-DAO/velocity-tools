@@ -18,10 +18,24 @@ import { fetchCheck, fetchQuote } from '../../helpers/quote';
 
 type IUseCraftingCampaign = {
   check: (includeItems?: boolean) => void;
-  craft: (planId: string, input: any[], concurrent: number, tokenSplit: number, overridStrategy?: UTXOStrategy) => Promise<string>;
+  craft: (
+    planId: string,
+    input: any[],
+    concurrent: number,
+    tokenSplit: number,
+    overridStrategy?: UTXOStrategy,
+  ) => Promise<string>;
   claim: (craftId: string, overridStrategy?: UTXOStrategy) => Promise<string>;
-  bulkClaim: (craftIds: string[], overridStrategy?: UTXOStrategy) => Promise<string[]>;
-  quote: (planId: string, inputUnits: string[], concurrent: number, tokenSplit?: number) => Promise<any>;
+  bulkClaim: (
+    craftIds: string[],
+    overridStrategy?: UTXOStrategy,
+  ) => Promise<string[]>;
+  quote: (
+    planId: string,
+    inputUnits: string[],
+    concurrent: number,
+    tokenSplit?: number,
+  ) => Promise<any>;
   campaignConfig: any;
   craftingData: any;
   availableBP: any;
@@ -39,8 +53,6 @@ export enum CraftingStatusEnum {
   UPGRADING = 'UPGRADING',
   UPGRADE_PENDING = 'UPGRADE_PENDING',
 }
-
-
 
 /**
  * Velocity Tools Crafting Campaign Hook
@@ -173,7 +185,7 @@ export const useCraftingCampaign = (
         wallet,
         campaignConfig.walletAddress,
         currency,
-        overridStrategy ?? strategy
+        overridStrategy ?? strategy,
       );
 
       tx.setMetadata(0, {
@@ -199,8 +211,7 @@ export const useCraftingCampaign = (
   );
 
   const claim = useCallback(
-    async (craftId: string,
-      overrideStrategy?: UTXOStrategy) => {
+    async (craftId: string, overrideStrategy?: UTXOStrategy) => {
       if (!connected) {
         throw new Error('Wallet not connected');
       }
@@ -221,7 +232,7 @@ export const useCraftingCampaign = (
         wallet,
         campaignConfig.walletAddress,
         currency,
-        overrideStrategy ?? UTXOStrategy.ADA_ONLY
+        overrideStrategy ?? UTXOStrategy.ADA_ONLY,
       );
       tx.setMetadata(0, { t: 'claim', cid: craftId });
 
@@ -233,10 +244,8 @@ export const useCraftingCampaign = (
     [connected, wallet, status, campaignConfig, craftingData],
   );
 
-
   const bulkClaim = useCallback(
-    async (craftIds: string[],
-      overrideStrategy?: UTXOStrategy) => {
+    async (craftIds: string[], overrideStrategy?: UTXOStrategy) => {
       if (!connected) {
         throw new Error('Wallet not connected');
       }
@@ -258,11 +267,11 @@ export const useCraftingCampaign = (
         wallet,
         campaignConfig.walletAddress,
         currency,
-        overrideStrategy ?? UTXOStrategy.ADA_ONLY
+        overrideStrategy ?? UTXOStrategy.ADA_ONLY,
       );
-      tx.setMetadata(0, { t: 'multi-claim' });
-      for (let index = 1; index <= craftIds.length; index++) {
-        tx.setMetadata(index, { cid: craftIds[index] });
+      tx.setMetadata(0, { t: 'bulk-claim' });
+      for (let index = 0; index < craftIds.length; index++) {
+        tx.setMetadata(index + 1, { cid: craftIds[index] });
       }
 
       await submitTx(tx, wallet);
