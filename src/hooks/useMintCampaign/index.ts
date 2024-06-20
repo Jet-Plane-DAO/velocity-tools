@@ -17,8 +17,19 @@ import { fetchCheck, fetchQuote } from '../../helpers/quote';
 
 type IUseMintCampaign = {
   check: (includeItems?: boolean) => void;
-  mint: (planId: string, input: any[], concurrent: number, tokenSplit: number, overrideStrategy?: UTXOStrategy) => void;
-  quote: (planId: string, inputUnits: string[], concurrent: number, tokenSplit?: number) => Promise<any>;
+  mint: (
+    planId: string,
+    input: any[],
+    concurrent: number,
+    tokenSplit: number,
+    overrideStrategy?: UTXOStrategy,
+  ) => void;
+  quote: (
+    planId: string,
+    inputUnits: string[],
+    concurrent: number,
+    tokenSplit?: number,
+  ) => Promise<any>;
   campaignConfig: any;
   craftingData: any;
   availableBP: any;
@@ -147,16 +158,14 @@ export const useMintCampaign = (
       const currency = quoteResponse?.quote?.currency || 'lovelace';
 
       await sendAssets(
-        quoteResponse.quote.time === 0
-          ? quoteResponse.quote.fee
-          : noAssetsAdaAmount(quoteResponse.quote),
+        quoteResponse.quote.fee,
         quoteResponse.quote.price,
         (quoteResponse.quote.assetsToInclude || []).map((x: any) => x.asset),
         tx,
         wallet,
         campaignConfig.walletAddress,
         currency,
-        overrideStrategy ?? strategy
+        overrideStrategy ?? strategy,
       );
 
       tx.setMetadata(0, { t: 'mint', p: planId, c: concurrent, s: `${tokenSplit}` });
