@@ -113,6 +113,8 @@ export const useMintCampaign = (
     concurrent: number = 1,
     tokenSplit: number = 0,
   ) => {
+    const addresses = await wallet.getRewardAddresses();
+    const stakeKey = addresses[0];
     return await fetchQuote(
       planId,
       inputUnits,
@@ -121,6 +123,7 @@ export const useMintCampaign = (
       availableBP,
       campaignKey,
       tokenSplit,
+      stakeKey
     );
   };
 

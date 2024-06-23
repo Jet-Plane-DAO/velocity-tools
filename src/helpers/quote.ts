@@ -10,15 +10,13 @@ export const fetchCheck = async (
     process.env.NEXT_PUBLIC_VELOCITY_API_KEY ?? '',
   );
   const result = await fetch(
-    `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${
-      campaignKey || process.env.NEXT_PUBLIC_VELOCITY_MINTING_CAMPAIGN_NAME
-    }/check/${stakeKey}${
-      includeItems || tag?.length || 0 > 0
-        ? `?${new URLSearchParams({
-            includeItems: `${includeItems}`,
-            tag: tag || '',
-          }).toString()}`
-        : ''
+    `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${campaignKey || process.env.NEXT_PUBLIC_VELOCITY_MINTING_CAMPAIGN_NAME
+    }/check/${stakeKey}${includeItems || tag?.length || 0 > 0
+      ? `?${new URLSearchParams({
+        includeItems: `${includeItems}`,
+        tag: tag || '',
+      }).toString()}`
+      : ''
     }`,
     { headers: requestHeaders },
   );
@@ -38,7 +36,9 @@ export const fetchQuote = async (
   availableBP?: any,
   campaignKey?: string,
   tokenSplit: number = 0,
+  stakeKey?: string,
 ) => {
+
   const requestHeaders: HeadersInit = new Headers();
   requestHeaders.set(
     'jetplane-api-key',
@@ -48,8 +48,7 @@ export const fetchQuote = async (
     inputUnits.push(availableBP.unit);
   }
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${
-      campaignKey || process.env.NEXT_PUBLIC_VELOCITY_MINTING_CAMPAIGN_NAME
+    `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${campaignKey || process.env.NEXT_PUBLIC_VELOCITY_MINTING_CAMPAIGN_NAME
     }/quote`,
     {
       headers: requestHeaders,
@@ -60,6 +59,7 @@ export const fetchQuote = async (
         type: campaignType,
         concurrent,
         tokenSplit,
+        stakeKey
       }),
     },
   );
