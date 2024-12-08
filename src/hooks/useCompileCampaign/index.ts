@@ -24,6 +24,7 @@ type IUseCompileCampaign = {
   craftingData: any;
   availableBP: any;
   status: CompileStatusEnum;
+  setUserDefinedInput: (input: any, content: any) => void;
 };
 
 export enum CompileStatusEnum {
@@ -195,6 +196,32 @@ export const useCompileCampaign = (
     [availableBP, connected, wallet, status, campaignConfig],
   );
 
+  const setUserDefinedInput = async (input: any, content: any, file?: File) => {
+    const requestHeaders: HeadersInit = new Headers();
+    requestHeaders.set(
+      'jetplane-api-key',
+      process.env.NEXT_PUBLIC_VELOCITY_API_KEY ?? '',
+    );
+
+    const formData = new FormData();
+    formData.append('input', JSON.stringify(input));
+    formData.append('content', JSON.stringify(content));
+    if (file) formData.append('file', file);
+
+    const result = await fetch(
+      `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${campaignKey || process.env.NEXT_PUBLIC_VELOCITY_MINTING_CAMPAIGN_NAME
+      }/setUserDefinedInput`,
+      { headers: requestHeaders, method: 'post', body: formData },
+    );
+
+    const data = await result.json();
+    return {
+      status: data?.status || { crafts: [], mints: [], locked: [] },
+      config: data.config,
+    };
+
+  };
+
   return {
     check,
     compile,
@@ -203,6 +230,7 @@ export const useCompileCampaign = (
     craftingData,
     availableBP,
     quote,
+    setUserDefinedInput
   };
 };
 
