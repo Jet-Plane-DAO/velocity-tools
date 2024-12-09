@@ -7,7 +7,7 @@ import {
   largestFirst,
 } from '@meshsdk/core';
 import { LOVELACE_MULTIPLIER } from './ada';
-import { isPolicyOffChain } from './offchain';
+import { isPolicyOffChain, isPolicyPreDefined } from './inputs';
 import PropTypes from 'prop-types';
 
 export enum UTXOStrategy {
@@ -59,7 +59,13 @@ export const validatePlan = (
   if (!plan) throw new Error('Plan not found');
 
   for (const i of selectedInputs) {
-    if (!i?.policyId?.length || isPolicyOffChain(i.policyId)) continue;
+    if (
+      !i?.policyId?.length ||
+      isPolicyOffChain(i.policyId) ||
+      isPolicyPreDefined(i.policyId) ||
+      isPolicyPreDefined(i.policyId)
+    )
+      continue;
     const input = campaignConfig?.inputs?.find(
       (x: any) => x.policyId === i.policyId,
     );

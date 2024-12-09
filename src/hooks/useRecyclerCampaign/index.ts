@@ -10,12 +10,16 @@ import {
   setAddressMetadata,
   submitTx,
 } from '../../helpers/tx';
-import { isPolicyOffChain } from '../../helpers/offchain';
+import { isPolicyOffChain } from '../../helpers/inputs';
 
 type IUseRecyclerCampaign = {
   check: () => void;
   quote: (inputUnits: string[], recyclerUnits: string[]) => Promise<any>;
-  recycle: (inputUnits: any[], recycleUnits: string[], overrideStrategy?: UTXOStrategy) => Promise<any>;
+  recycle: (
+    inputUnits: any[],
+    recycleUnits: string[],
+    overrideStrategy?: UTXOStrategy,
+  ) => Promise<any>;
   campaignConfig: any;
   recyclerData: any;
   availableBP: any;
@@ -77,7 +81,7 @@ export enum RecyclerStatusEnum {
 
 export const useRecyclerCampaign = (
   campaignKey?: string,
-  strategy: UTXOStrategy = UTXOStrategy.ISOLATED
+  strategy: UTXOStrategy = UTXOStrategy.ISOLATED,
 ): IUseRecyclerCampaign => {
   const { availableBP } = useCampaignAssets();
   const [recyclerData, setRecyclerData] = useState<any | null>(null);
@@ -99,7 +103,8 @@ export const useRecyclerCampaign = (
         process.env.NEXT_PUBLIC_VELOCITY_API_KEY ?? '',
       );
       fetch(
-        `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${campaignKey || process.env.NEXT_PUBLIC_VELOCITY_RECYCLER_CAMPAIGN_NAME
+        `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${
+          campaignKey || process.env.NEXT_PUBLIC_VELOCITY_RECYCLER_CAMPAIGN_NAME
         }/check/${stakeKey}`,
         { headers: requestHeaders },
       ).then(async (res) => {
@@ -128,7 +133,8 @@ export const useRecyclerCampaign = (
       inputUnits.push(availableBP.unit);
     }
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${campaignKey || process.env.NEXT_PUBLIC_VELOCITY_RECYCLER_CAMPAIGN_NAME
+      `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${
+        campaignKey || process.env.NEXT_PUBLIC_VELOCITY_RECYCLER_CAMPAIGN_NAME
       }/quote`,
       {
         headers: requestHeaders,
@@ -152,9 +158,10 @@ export const useRecyclerCampaign = (
   };
 
   const recycle = useCallback(
-    async (selectedInputs: any[],
+    async (
+      selectedInputs: any[],
       recycleUnits: string[],
-      overridStrategy?: UTXOStrategy
+      overridStrategy?: UTXOStrategy,
     ) => {
       if (!connected) {
         throw new Error('Wallet not connected');

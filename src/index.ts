@@ -17,6 +17,12 @@ export {
   isPolicyOffChain,
   toOffChainPolicy,
   toOffChainUnit,
-} from './helpers/offchain';
+  isPolicyPreDefined,
+  toPreDefinedPolicy,
+  toPreDefinedUnit,
+  isPolicyUserDefined,
+  toUserDefinedPolicy,
+  toUserDefinedUnit,
+} from './helpers/inputs';
 
 export { UTXOStrategy } from './helpers/tx';
