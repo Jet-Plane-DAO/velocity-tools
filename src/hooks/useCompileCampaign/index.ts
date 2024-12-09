@@ -40,7 +40,7 @@ type IUseCompileCampaign = {
     planId: string,
     content: any,
     file?: File,
-  ) => void;
+  ) => { id: string; content: string; createdAt: string };
 };
 
 export enum CompileStatusEnum {
@@ -238,10 +238,7 @@ export const useCompileCampaign = (
     );
 
     const data = await result.json();
-    return {
-      status: data?.status || { crafts: [], mints: [], locked: [] },
-      config: data.config,
-    };
+    return data;
   };
 
   return {
