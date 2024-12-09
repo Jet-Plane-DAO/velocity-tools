@@ -18,13 +18,24 @@ import { fetchCheck, fetchQuote } from '../../helpers/quote';
 
 type IUseCompileCampaign = {
   check: (includeItems?: boolean) => void;
-  compile: (planId: string, input: any[], concurrent?: number, tokenSplit?: number, overridStrategy?: UTXOStrategy) => void;
-  quote: (planId: string, inputUnits: string[], concurrent: number) => Promise<any>;
+  compile: (
+    planId: string,
+    input: any[],
+    concurrent?: number,
+    tokenSplit?: number,
+    overridStrategy?: UTXOStrategy,
+  ) => void;
+  quote: (
+    planId: string,
+    inputUnits: string[],
+    concurrent: number,
+    tokenSplit?: number,
+  ) => Promise<any>;
   campaignConfig: any;
   craftingData: any;
   availableBP: any;
   status: CompileStatusEnum;
-  setUserDefinedInput: (input: any, content: any) => void;
+  setUserDefinedInput: (input: any, content: any, file?: File) => void;
 };
 
 export enum CompileStatusEnum {
@@ -56,22 +67,22 @@ export enum CompileStatusEnum {
  *           Check the status of the campaign and update the crafting data for the currently connected wallet
  *
  * @property {(planId: string, inputUnits: string[], concurrent: number)=>void} quote
- *           Fetches a quote for a craft transaction, returns the quote data, this includes the quantity, fee, token price, time to craft and any effective modifiers that are being applied.
+ *           Fetches a quote for a complile transaction, returns the quote data, this includes the quantity, fee, token price and any effective modifiers that are being applied.
  *
- * @property {(planId: string, input: any[], concurrent: number)=>void} craft
+ * @property {(planId: string, input: any[], concurrent: number)=>void} compile
  *           Create a craft transaction to begin crafting an item, optionally if the plan has 0 time it will be claimed immediately, the claim fee must be included.
  *
- * @property {(craftId: string)=>void} claim
- *           Create a claim transaction for an existing craft
+ * @property {(input: any, content: any, file?: File)=>void} setUserDefinedInput
+ *           A method to upload an image or text for campaigns with user defined inputs.
  *
  * @example
  *   const ExampleComponent = () => {
-       const { check, craft, claim, campaignConfig, status, craftingData } = useCraftingCampaign();
+ *      const { check, craft, claim, campaignConfig, status, craftingData } = useCraftingCampaign();
  *
-       useEffect(() => {
-  *       check();
-  *    }, []);
-  *
+ *      useEffect(() => {
+ *       check();
+ *    }, []);
+ *
  *     return (
  *       <>
  *
@@ -171,7 +182,7 @@ export const useCompileCampaign = (
         wallet,
         campaignConfig.walletAddress,
         currency,
-        overridStrategy ?? strategy
+        overridStrategy ?? strategy,
       );
 
       tx.setMetadata(0, {
@@ -209,7 +220,8 @@ export const useCompileCampaign = (
     if (file) formData.append('file', file);
 
     const result = await fetch(
-      `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${campaignKey || process.env.NEXT_PUBLIC_VELOCITY_MINTING_CAMPAIGN_NAME
+      `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${
+        campaignKey || process.env.NEXT_PUBLIC_VELOCITY_MINTING_CAMPAIGN_NAME
       }/setUserDefinedInput`,
       { headers: requestHeaders, method: 'post', body: formData },
     );
@@ -219,7 +231,6 @@ export const useCompileCampaign = (
       status: data?.status || { crafts: [], mints: [], locked: [] },
       config: data.config,
     };
-
   };
 
   return {
@@ -230,10 +241,9 @@ export const useCompileCampaign = (
     craftingData,
     availableBP,
     quote,
-    setUserDefinedInput
+    setUserDefinedInput,
   };
 };
-
 
 useCompileCampaign.PropTypes = {
   campaignKey: PropTypes.string,
