@@ -40,7 +40,7 @@ type IUseCompileCampaign = {
     planId: string,
     content: any,
     file?: File,
-  ) => { id: string; content: string; createdAt: string };
+  ) => Promise<{ id: string; content: string; createdAt: string }>;
 };
 
 export enum CompileStatusEnum {
@@ -237,7 +237,7 @@ export const useCompileCampaign = (
       { headers: requestHeaders, method: 'post', body: formData },
     );
 
-    const data = await result.json();
+    const data: any = await result.json();
     return data;
   };
 
