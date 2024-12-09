@@ -35,7 +35,12 @@ type IUseCompileCampaign = {
   craftingData: any;
   availableBP: any;
   status: CompileStatusEnum;
-  setUserDefinedInput: (input: any, content: any, file?: File) => void;
+  setUserDefinedInput: (
+    inputId: string,
+    planId: string,
+    content: any,
+    file?: File,
+  ) => void;
 };
 
 export enum CompileStatusEnum {
@@ -207,7 +212,12 @@ export const useCompileCampaign = (
     [availableBP, connected, wallet, status, campaignConfig],
   );
 
-  const setUserDefinedInput = async (inputId: any, content: any, file?: File) => {
+  const setUserDefinedInput = async (
+    inputId: string,
+    planId: string,
+    content: any,
+    file?: File,
+  ) => {
     const requestHeaders: HeadersInit = new Headers();
     requestHeaders.set(
       'jetplane-api-key',
@@ -216,6 +226,7 @@ export const useCompileCampaign = (
 
     const formData = new FormData();
     formData.append('inputId', inputId);
+    formData.append('planId', planId);
     formData.append('content', JSON.stringify(content));
     if (file) formData.append('file', file);
 
