@@ -7,7 +7,6 @@ import {
   UTXOStrategy,
   UTXOStrategyType,
   logDebugMessage,
-  noAssetsAdaAmount,
   sendAssets,
   setAddressMetadata,
   submitTx,
@@ -134,7 +133,7 @@ export const useMintCampaign = (
       availableBP,
       campaignKey,
       tokenSplit,
-      stakeKey
+      stakeKey,
     );
   };
 

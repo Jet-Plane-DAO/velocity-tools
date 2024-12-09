@@ -207,7 +207,7 @@ export const useCompileCampaign = (
     [availableBP, connected, wallet, status, campaignConfig],
   );
 
-  const setUserDefinedInput = async (input: any, content: any, file?: File) => {
+  const setUserDefinedInput = async (inputId: any, content: any, file?: File) => {
     const requestHeaders: HeadersInit = new Headers();
     requestHeaders.set(
       'jetplane-api-key',
@@ -215,7 +215,7 @@ export const useCompileCampaign = (
     );
 
     const formData = new FormData();
-    formData.append('input', JSON.stringify(input));
+    formData.append('inputId', inputId);
     formData.append('content', JSON.stringify(content));
     if (file) formData.append('file', file);
 

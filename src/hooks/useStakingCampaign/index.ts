@@ -1,7 +1,6 @@
 import { useCallback, useState } from 'react';
 
-import { LOVELACE_MULTIPLIER } from '../../helpers/ada';
-import { Transaction, keepRelevant } from '@meshsdk/core';
+import { Transaction } from '@meshsdk/core';
 import { useWallet } from '@meshsdk/react';
 import { UTXOStrategy, sendAssets, submitTx } from '../../helpers/tx';
 
@@ -99,7 +98,7 @@ export const useStakingCampaign = (): IUseStakingCampaign => {
     if (status !== StakingStatusEnum.UNSTAKED) return;
     setStatus(StakingStatusEnum.REGISTERING);
 
-    const tx = new Transaction({ initiator: wallet })
+    const tx = new Transaction({ initiator: wallet });
     await sendAssets(
       campaignConfig!.registrationFee,
       0,
@@ -108,14 +107,13 @@ export const useStakingCampaign = (): IUseStakingCampaign => {
       wallet,
       campaignConfig.walletAddress,
       undefined,
-      UTXOStrategy.DEFAULT
+      UTXOStrategy.DEFAULT,
     );
 
     await submitTx(tx, wallet);
     setStatus(StakingStatusEnum.REGISTRATION_PENDING);
 
     return;
-
   }, [wallet, status, campaignConfig]);
 
   const claim = useCallback(async () => {
@@ -125,7 +123,7 @@ export const useStakingCampaign = (): IUseStakingCampaign => {
     }
 
     setStatus(StakingStatusEnum.CLAIMING);
-    const tx = new Transaction({ initiator: wallet })
+    const tx = new Transaction({ initiator: wallet });
     await sendAssets(
       campaignConfig!.claimFee,
       0,
@@ -134,7 +132,7 @@ export const useStakingCampaign = (): IUseStakingCampaign => {
       wallet,
       campaignConfig.walletAddress,
       undefined,
-      UTXOStrategy.DEFAULT
+      UTXOStrategy.DEFAULT,
     );
 
     await submitTx(tx, wallet);
