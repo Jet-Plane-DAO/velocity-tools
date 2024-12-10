@@ -45,7 +45,7 @@ export const isPolicyPreDefined = (policyId: string) => {
 };
 
 export const toUserDefinedPolicy = (inputId: string) => {
-  const policy = `pd://${inputId}//`;
+  const policy = `ud://${inputId}//`;
   const fill = Array((56 - policy?.length * 2) / 2)
     .fill('0')
     .join('');
