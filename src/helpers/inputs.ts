@@ -66,6 +66,28 @@ export const isPolicyUserDefined = (policyId: string) => {
   }
 };
 
+export const toPrecompileInputPolicy = (inputId: string) => {
+  const policy = `pc://${inputId}//`;
+  const fill = Array((56 - policy?.length * 2) / 2)
+    .fill('0')
+    .join('');
+  return strToHex(policy + fill);
+};
+
+export const toPrecompileInputUnit = (campaignId: string, imageId: string) => {
+  return `${toPrecompileInputPolicy(campaignId)}${toAssetName(imageId)}`;
+};
+
+export const isPolicyPreCompiled = (policyId: string) => {
+  try {
+    if (!hexToStr(policyId)) return false;
+    return hexToStr(policyId).toString().startsWith('pc://');
+  } catch (error: any) {
+    console.error('isPolicyPreCompiled error', error.message);
+    return false;
+  }
+};
+
 export const toAssetName = (assetName: string) => {
   return strToHex(assetName);
 };

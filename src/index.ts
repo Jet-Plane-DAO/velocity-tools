@@ -23,6 +23,8 @@ export {
   isPolicyUserDefined,
   toUserDefinedPolicy,
   toUserDefinedUnit,
+  toPrecompileInputPolicy,
+  toPrecompileInputUnit,
 } from './helpers/inputs';
 
 export { UTXOStrategy } from './helpers/tx';
