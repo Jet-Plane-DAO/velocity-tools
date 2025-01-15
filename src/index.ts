@@ -10,6 +10,7 @@ export {
 export { useMintCampaign, MintStatusEnum } from './hooks/useMintCampaign/';
 export { useUpgradeCampaign, UpgradeStatusEnum } from './hooks/useUpgradeCampaign/';
 export { useCompileCampaign, CompileStatusEnum } from './hooks/useCompileCampaign/';
+export { useSnapshotCampaign, SnapshotStatusEnum } from './hooks/useSnapshotCampaign/';
 export { useProject } from './hooks/useProject/';
 
 export {
