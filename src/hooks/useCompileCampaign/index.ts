@@ -24,7 +24,7 @@ type IUseCompileCampaign = {
     concurrent?: number,
     tokenSplit?: number,
     overridStrategy?: UTXOStrategy,
-  ) => void;
+  ) => Promise<string>;
   quote: (
     planId: string,
     inputUnits: string[],
