@@ -118,7 +118,7 @@ export const useCompileCampaign = (
     logDebugMessage(`Checking campaign ${campaignKey}`);
     setStatus(CompileStatusEnum.CHECKING);
     const addresses = wallet && connected ? await wallet.getRewardAddresses() : [];
-    const stakeKey = addresses.pop() ?? '';
+    const stakeKey = addresses.pop() ?? 'not-connected';
     const quote = await fetchCheck(stakeKey, includeItems, campaignKey, tag);
     setCraftingData(quote?.status || { mints: [] });
     setConfigData(quote.config);

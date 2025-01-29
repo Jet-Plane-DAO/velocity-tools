@@ -12,7 +12,7 @@ export const fetchCheck = async (
   const result = await fetch(
     `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${
       campaignKey || process.env.NEXT_PUBLIC_VELOCITY_MINTING_CAMPAIGN_NAME
-    }/check/${stakeKey ?? 'not-connected'}${
+    }/check/${stakeKey}${
       includeItems || tag?.length || 0 > 0
         ? `?${new URLSearchParams({
             includeItems: `${includeItems}`,
