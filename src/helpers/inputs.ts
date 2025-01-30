@@ -74,6 +74,18 @@ export const toPrecompileInputPolicy = (inputId: string) => {
   return strToHex(policy + fill);
 };
 
+export const toItemLookupInputUnit = (campaignId: string, itemId: string) => {
+  return `${toInputLookupPolicy(campaignId)}${toAssetName(itemId)}`;
+};
+
+export const toInputLookupPolicy = (inputId: string) => {
+  const policy = `lu://${inputId}//`;
+  const fill = Array((56 - policy?.length * 2) / 2)
+    .fill('0')
+    .join('');
+  return strToHex(policy + fill);
+};
+
 export const toPrecompileInputUnit = (campaignId: string, imageId: string) => {
   return `${toPrecompileInputPolicy(campaignId)}${toAssetName(imageId)}`;
 };

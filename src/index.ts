@@ -26,6 +26,7 @@ export {
   toUserDefinedUnit,
   toPrecompileInputPolicy,
   toPrecompileInputUnit,
+  toInputLookupPolicy,
 } from './helpers/inputs';
 
 export { UTXOStrategy } from './helpers/tx';
