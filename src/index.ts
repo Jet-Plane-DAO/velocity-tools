@@ -27,6 +27,7 @@ export {
   toPrecompileInputPolicy,
   toPrecompileInputUnit,
   toInputLookupPolicy,
+  toItemLookupInputUnit,
 } from './helpers/inputs';
 
 export { UTXOStrategy } from './helpers/tx';
