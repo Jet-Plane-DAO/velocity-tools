@@ -58,7 +58,7 @@ export const useSnapshotCampaign = (
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${campaignKey || process.env.NEXT_PUBLIC_VELOCITY_SNAPSHOT_CAMPAIGN_NAME
       }/check/no-stakekey`,
-      { headers: requestHeaders, method: 'post', body: JSON.stringify({}) },
+      { headers: requestHeaders },
     )
     const data = await res.json();
     if (res.status === 422) {
