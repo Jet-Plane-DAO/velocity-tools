@@ -111,14 +111,14 @@ export const useCompileCampaign = (
   const { wallet, connected } = useWallet();
 
   const check = async (includeItems?: boolean) => {
-    if (!connected) {
-      throw new Error('Wallet not connected');
-    }
-    if (!wallet) return;
+    // if (!connected) {
+    //   throw new Error('Wallet not connected');
+    // }
+    // if (!wallet) return;
     logDebugMessage(`Checking campaign ${campaignKey}`);
     setStatus(CompileStatusEnum.CHECKING);
-    const addresses = await wallet.getRewardAddresses();
-    const stakeKey = addresses[0];
+    const addresses = wallet && connected ? await wallet.getRewardAddresses() : [];
+    const stakeKey = addresses.pop() ?? 'not-connected';
     const quote = await fetchCheck(stakeKey, includeItems, campaignKey, tag);
     setCraftingData(quote?.status || { mints: [] });
     setConfigData(quote.config);
