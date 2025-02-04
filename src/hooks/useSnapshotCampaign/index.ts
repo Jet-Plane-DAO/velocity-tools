@@ -57,15 +57,15 @@ export const useSnapshotCampaign = (
     );
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${campaignKey || process.env.NEXT_PUBLIC_VELOCITY_SNAPSHOT_CAMPAIGN_NAME
-      }/check/no-stakekey`,
-      { headers: requestHeaders },
+      }/snapshot`,
+      { headers: requestHeaders, method: 'post', body: JSON.stringify({ state: true }) },
     )
     const data = await res.json();
     if (res.status === 422) {
       return { status: 'error', message: data.message };
     }
     if (res.status === 200) {
-      setSnapshotData(data.state);
+      setSnapshotData(data);
       return { status: 'OK', quote: data };
     }
     return snapshot ? { status: 'OK', result: snapshot } : null;
