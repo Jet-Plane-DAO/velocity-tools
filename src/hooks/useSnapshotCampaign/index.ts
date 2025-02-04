@@ -6,6 +6,7 @@ import {
 
 type IUseSnapshotCampaign = {
   query: (limit: number, page: number, facet1?: string, facet2?: string, filter1?: string, filter2?: string, sortBy?: string) => Promise<any>;
+  state: () => Promise<any>;
   snapshot: any;
 };
 
@@ -44,11 +45,35 @@ export const useSnapshotCampaign = (
       setSnapshotData(data);
       return { status: 'OK', quote: data };
     }
-    return snapshot ? { status: 'OK', quote: snapshot } : null;
+    return snapshot ? { status: 'OK', result: snapshot } : null;
+  };
+
+  const state = async () => {
+    // setStatus(SnapshotStatusEnum.CHECKING);
+    const requestHeaders: HeadersInit = new Headers();
+    requestHeaders.set(
+      'jetplane-api-key',
+      process.env.NEXT_PUBLIC_VELOCITY_API_KEY ?? '',
+    );
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${campaignKey || process.env.NEXT_PUBLIC_VELOCITY_SNAPSHOT_CAMPAIGN_NAME
+      }/check/no-stakekey`,
+      { headers: requestHeaders, method: 'post', body: JSON.stringify({}) },
+    )
+    const data = await res.json();
+    if (res.status === 422) {
+      return { status: 'error', message: data.message };
+    }
+    if (res.status === 200) {
+      setSnapshotData(data.state);
+      return { status: 'OK', quote: data };
+    }
+    return snapshot ? { status: 'OK', result: snapshot } : null;
   };
 
   return {
     query,
+    state,
     snapshot,
   };
 };
