@@ -29,6 +29,9 @@ type IUseMintCampaign = {
     concurrent: number,
     tokenSplit?: number,
   ) => Promise<any>;
+  item: (
+    itemId: string
+  ) => Promise<any>;
   campaignConfig: any;
   craftingData: any;
   availableBP: any;
@@ -137,6 +140,31 @@ export const useMintCampaign = (
     );
   };
 
+  const item = async (
+    itemId: string
+  ) => {
+    const requestHeaders: HeadersInit = new Headers();
+    requestHeaders.set(
+      'jetplane-api-key',
+      process.env.NEXT_PUBLIC_VELOCITY_API_KEY ?? '',
+    );
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${campaignKey || process.env.NEXT_PUBLIC_VELOCITY_MINTING_CAMPAIGN_NAME
+      }/item/${itemId}`,
+      {
+        headers: requestHeaders,
+      },
+    );
+    const data = await res.json();
+    if (res.status === 422) {
+      return { status: 'error', message: data.message };
+    }
+    if (res.status === 200) {
+      return { status: 'OK', quote: data };
+    }
+    return { status: 'error', message: 'Unknown error' };
+  };
+
   const mint = useCallback(
     async (
       planId: string,
@@ -194,6 +222,7 @@ export const useMintCampaign = (
     craftingData,
     availableBP,
     quote,
+    item
   };
 };
 
