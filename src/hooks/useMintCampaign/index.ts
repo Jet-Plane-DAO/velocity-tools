@@ -241,7 +241,7 @@ export const useMintCampaign = (
       const tx = new Transaction({ initiator: wallet });
 
       await sendAssets(
-        selectedInputs.length * 1500000,
+        selectedInputs.length * 1.5,
         0,
         selectedInputs,
         tx,
