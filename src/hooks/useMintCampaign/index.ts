@@ -23,6 +23,11 @@ type IUseMintCampaign = {
     tokenSplit: number,
     overrideStrategy?: UTXOStrategy,
   ) => void;
+  burn: (
+    planId: string,
+    input: any[],
+    overrideStrategy?: UTXOStrategy,
+  ) => void;
   quote: (
     planId: string,
     inputUnits: string[],
@@ -125,6 +130,7 @@ export const useMintCampaign = (
     inputUnits: string[],
     concurrent: number = 1,
     tokenSplit: number = 0,
+    action = 'mint',
   ) => {
     const addresses = await wallet.getRewardAddresses();
     const stakeKey = addresses[0];
@@ -132,7 +138,7 @@ export const useMintCampaign = (
       planId,
       inputUnits,
       concurrent,
-      'mint',
+      action,
       availableBP,
       campaignKey,
       tokenSplit,
@@ -190,7 +196,7 @@ export const useMintCampaign = (
       await sendAssets(
         quoteResponse.quote.fee,
         quoteResponse.quote.price,
-        (quoteResponse.quote.assetsToInclude || []).map((x: any) => x.asset),
+        (quoteResponse.quote.assetsToInclude || []).map((x: any) => ({ unit: x.asset, quantity: '1' })),
         tx,
         wallet,
         campaignConfig.walletAddress,
@@ -214,9 +220,57 @@ export const useMintCampaign = (
     [availableBP, connected, wallet, status, campaignConfig],
   );
 
+  const burn = useCallback(
+    async (
+      planId: string,
+      selectedInputs: any[],
+      overrideStrategy?: UTXOStrategy,
+    ) => {
+      validatePlan(connected, campaignConfig, planId, selectedInputs);
+      // const quoteResponse = await quote(
+      //   planId,
+      //   selectedInputs.map((i) => i.unit),
+      //   1,
+      //   1,
+      //   'burn',
+      // );
+
+      // if (!quoteResponse?.quote) throw new Error('Quote not found');
+
+      if (selectedInputs.length !== 1) throw new Error('Can only burn one asset at a time');
+      const tx = new Transaction({ initiator: wallet });
+
+      await sendAssets(
+        selectedInputs.length * 1500000,
+        0,
+        selectedInputs,
+        tx,
+        wallet,
+        campaignConfig.walletAddress,
+        'lovelace',
+        overrideStrategy ?? strategy,
+      );
+
+      tx.setMetadata(0, { t: 'burn', p: planId, c: 1, s: `${1}` });
+      let ix = 1;
+      selectedInputs.forEach((i) => {
+        ix = setAddressMetadata(tx, ix, i.unit);
+      });
+      if (availableBP) {
+        ix = setAddressMetadata(tx, ix, availableBP.unit);
+      }
+
+      const hash = await submitTx(tx, wallet);
+
+      return hash;
+    },
+    [availableBP, connected, wallet, status, campaignConfig],
+  );
+
   return {
     check,
     mint,
+    burn,
     campaignConfig,
     status,
     craftingData,

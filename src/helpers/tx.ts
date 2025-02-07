@@ -1,10 +1,10 @@
 import {
   Asset,
-  IWallet,
   Transaction,
   UTxO,
   keepRelevant,
   largestFirst,
+  BrowserWallet,
 } from '@meshsdk/core';
 import { LOVELACE_MULTIPLIER } from './ada';
 import { isPolicyOffChain, isPolicyPreDefined } from './inputs';
@@ -36,7 +36,7 @@ export const logTx = (tx: any) => {
       recipients: tx._recipients,
       txWithdrawals: tx._txWithdrawals,
     });
-  } catch (error) {}
+  } catch (error) { }
 };
 
 export const logDebugMessage = (message: string) => {
@@ -116,7 +116,7 @@ const calculateMinAda = async (
 };
 
 const setIsolatedInputs = async (
-  wallet: IWallet,
+  wallet: BrowserWallet,
   assetUnits: string[],
   nativeToken: { amount: number; asset: string },
   adaAmount: number,
@@ -151,7 +151,7 @@ const setIsolatedInputs = async (
       utxos,
       `${Math.round(
         adaAmount * LOVELACE_MULTIPLIER +
-          (await calculateMinAda(nativeToken.amount, assetUnits, nativeToken.asset)),
+        (await calculateMinAda(nativeToken.amount, assetUnits, nativeToken.asset)),
       )}`,
     );
 
@@ -165,9 +165,9 @@ const setIsolatedInputs = async (
 export const sendAssets = async (
   adaAmount: number,
   nativeTokenAmount: number,
-  assetUnits: string[],
+  assetUnits: ({ unit: string, quantity: string })[],
   tx: Transaction,
-  wallet: IWallet,
+  wallet: BrowserWallet,
   walletAddress: string,
   nativeTokenAsset?: string,
   strategy: UTXOStrategy = UTXOStrategy.DEFAULT,
@@ -177,7 +177,7 @@ export const sendAssets = async (
   if (strategy === UTXOStrategy.ISOLATED) {
     inputs = await setIsolatedInputs(
       wallet,
-      assetUnits,
+      assetUnits.map((a) => a.unit),
       { amount: nativeTokenAmount, asset: nativeTokenAsset ?? '' },
       adaAmount,
     );
@@ -206,7 +206,7 @@ export const sendAssets = async (
       (await calculateMinAda(
         nativeTokenAmount,
         [
-          ...assetUnits,
+          ...assetUnits.map(a => a.unit),
           ...outputs.filter((x) => x.unit !== 'lovelace').map((x) => x.unit),
         ],
         nativeTokenAsset,
@@ -217,7 +217,7 @@ export const sendAssets = async (
       if (debug) console.log(`[min_ada Too low - recalculating]`, minAda);
       inputs = await setIsolatedInputs(
         wallet,
-        [...assetUnits, ...outputs.map((x) => x.unit)],
+        [...assetUnits.map(x => x.unit), ...outputs.map((x) => x.unit)],
         { amount: nativeTokenAmount, asset: nativeTokenAsset ?? '' },
         adaAmount,
       );
@@ -232,7 +232,7 @@ export const sendAssets = async (
   }
 
   if (nativeTokenAmount > 0 || assetUnits?.length) {
-    const assets: Asset[] = assetUnits.map((a: any) => ({ unit: a, quantity: '1' }));
+    const assets: Asset[] = assetUnits ?? [];
 
     if (nativeTokenAmount > 0) {
       if (debug)
@@ -251,7 +251,7 @@ export const sendAssets = async (
   return;
 };
 
-export const submitTx = async (tx: Transaction, wallet: IWallet) => {
+export const submitTx = async (tx: Transaction, wallet: BrowserWallet) => {
   if (debug) logTx(tx);
   const unsignedTx = await tx.build();
   if (debug) console.log('[unsignedTx]', unsignedTx);

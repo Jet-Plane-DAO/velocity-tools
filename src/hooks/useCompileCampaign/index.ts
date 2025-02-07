@@ -182,7 +182,7 @@ export const useCompileCampaign = (
           ? quoteResponse.quote.fee
           : noAssetsAdaAmount(quoteResponse.quote),
         quoteResponse.quote.price,
-        (quoteResponse.quote.assetsToInclude || []).map((x: any) => x.asset),
+        (quoteResponse.quote.assetsToInclude || []).map((x: any) => ({ unit: x.asset, quantity: '1' })),
         tx,
         wallet,
         campaignConfig.walletAddress,
@@ -231,8 +231,7 @@ export const useCompileCampaign = (
     if (file) formData.append('file', file);
 
     const result = await fetch(
-      `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${
-        campaignKey || process.env.NEXT_PUBLIC_VELOCITY_MINTING_CAMPAIGN_NAME
+      `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${campaignKey || process.env.NEXT_PUBLIC_VELOCITY_MINTING_CAMPAIGN_NAME
       }/setUserDefinedInput`,
       { headers: requestHeaders, method: 'post', body: formData },
     );
