@@ -5,7 +5,7 @@ import {
 } from '../../helpers/tx';
 
 type IUseSnapshotCampaign = {
-  query: (limit: number, page: number, facet1?: string, facet2?: string, filter1?: string, filter2?: string, sortBy?: string) => Promise<any>;
+  query: (limit: number, page: number, facet1?: string, facet2?: string, filter1?: string, filter2?: string, sortBy?: string, sortOrder?: string) => Promise<any>;
   snapshot: any;
 };
 
@@ -24,7 +24,7 @@ export const useSnapshotCampaign = (
   const [snapshot, setSnapshotData] = useState<any | null>(null);
   // const { wallet, connected } = useWallet();
 
-  const query = async (limit: number = 100, page: number = 1, facet1?: string, facet2?: string, filter1?: string, filter2?: string, sortBy?: string) => {
+  const query = async (limit: number = 100, page: number = 1, facet1?: string, facet2?: string, filter1?: string, filter2?: string, sortBy?: string, sortOrder?: string) => {
     // setStatus(SnapshotStatusEnum.CHECKING);
     const requestHeaders: HeadersInit = new Headers();
     requestHeaders.set(
@@ -34,7 +34,7 @@ export const useSnapshotCampaign = (
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_VELOCITY_API}/campaign/${campaignKey || process.env.NEXT_PUBLIC_VELOCITY_SNAPSHOT_CAMPAIGN_NAME
       }/snapshot`,
-      { headers: requestHeaders, method: 'post', body: JSON.stringify({ limit, page, facet1, facet2, filter1, filter2, sortBy }) },
+      { headers: requestHeaders, method: 'post', body: JSON.stringify({ limit, page, facet1, facet2, filter1, filter2, sortBy, sortOrder }) },
     )
     const data = await res.json();
     if (res.status === 422) {
