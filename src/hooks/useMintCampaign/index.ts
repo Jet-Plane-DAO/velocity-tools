@@ -22,12 +22,12 @@ type IUseMintCampaign = {
     concurrent: number,
     tokenSplit: number,
     overrideStrategy?: UTXOStrategy,
-  ) => void;
+  ) => Promise<string>;
   burn: (
     planId: string,
     input: any[],
     overrideStrategy?: UTXOStrategy,
-  ) => void;
+  ) => Promise<string>;
   quote: (
     planId: string,
     inputUnits: string[],
