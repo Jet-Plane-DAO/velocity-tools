@@ -22,11 +22,13 @@ type IUseMintCampaign = {
     concurrent: number,
     tokenSplit: number,
     overrideStrategy?: UTXOStrategy,
+    correlationId?: string,
   ) => Promise<string>;
   burn: (
     planId: string,
     input: any[],
     overrideStrategy?: UTXOStrategy,
+    correlationId?: string,
   ) => Promise<string>;
   quote: (
     planId: string,
@@ -178,6 +180,7 @@ export const useMintCampaign = (
       concurrent: number = 1,
       tokenSplit: number = 0,
       overrideStrategy?: UTXOStrategy,
+      correlationId?: string,
     ) => {
       validatePlan(connected, campaignConfig, planId, selectedInputs);
       const quoteResponse = await quote(
@@ -204,7 +207,16 @@ export const useMintCampaign = (
         overrideStrategy ?? strategy,
       );
 
-      tx.setMetadata(0, { t: 'mint', p: planId, c: concurrent, s: `${tokenSplit}` });
+      tx.setMetadata(0, {
+        t: 'mint',
+        p: planId,
+        c: concurrent,
+        s: `${tokenSplit}`,
+        // Correlation id (FAN-50/VEL-1a) carried on-chain so the engine trace
+        // (VEL-1b) joins the client breadcrumb. UUID v4 fits a single metadata string.
+        // Key is `corr` — `cid` is already taken by the engine for craftId.
+        ...(correlationId ? { corr: correlationId } : {}),
+      });
       let ix = 1;
       selectedInputs.forEach((i) => {
         ix = setAddressMetadata(tx, ix, i.unit);
@@ -225,6 +237,7 @@ export const useMintCampaign = (
       planId: string,
       selectedInputs: any[],
       overrideStrategy?: UTXOStrategy,
+      correlationId?: string,
     ) => {
       validatePlan(connected, campaignConfig, planId, selectedInputs);
       // const quoteResponse = await quote(
@@ -251,7 +264,15 @@ export const useMintCampaign = (
         overrideStrategy ?? strategy,
       );
 
-      tx.setMetadata(0, { t: 'burn', p: planId, c: 1, s: `${1}` });
+      tx.setMetadata(0, {
+        t: 'burn',
+        p: planId,
+        c: 1,
+        s: `${1}`,
+        // Correlation id (FAN-50/VEL-1a) carried on-chain for the engine trace join.
+        // Key is `corr` — `cid` is already taken by the engine for craftId.
+        ...(correlationId ? { corr: correlationId } : {}),
+      });
       let ix = 1;
       selectedInputs.forEach((i) => {
         ix = setAddressMetadata(tx, ix, i.unit);
