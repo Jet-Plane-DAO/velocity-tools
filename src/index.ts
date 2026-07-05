@@ -31,3 +31,10 @@ export {
 } from './helpers/inputs';
 
 export { UTXOStrategy } from './helpers/tx';
+
+export { writeBreadcrumb } from './helpers/breadcrumbs';
+export type {
+  WriteBreadcrumbInput,
+  TxBreadcrumbAction,
+  TxBreadcrumbPhase,
+} from './helpers/breadcrumbs';
