@@ -4,7 +4,7 @@ import {
   UTxO,
   keepRelevant,
   largestFirst,
-  BrowserWallet,
+  IWallet,
 } from '@meshsdk/core';
 import { LOVELACE_MULTIPLIER } from './ada';
 import { isPolicyOffChain, isPolicyPreDefined } from './inputs';
@@ -116,7 +116,7 @@ const calculateMinAda = async (
 };
 
 const setIsolatedInputs = async (
-  wallet: BrowserWallet,
+  wallet: IWallet,
   assetUnits: string[],
   nativeToken: { amount: number; asset: string },
   adaAmount: number,
@@ -167,7 +167,7 @@ export const sendAssets = async (
   nativeTokenAmount: number,
   assetUnits: ({ unit: string, quantity: string })[],
   tx: Transaction,
-  wallet: BrowserWallet,
+  wallet: IWallet,
   walletAddress: string,
   nativeTokenAsset?: string,
   strategy: UTXOStrategy = UTXOStrategy.DEFAULT,
@@ -251,7 +251,7 @@ export const sendAssets = async (
   return;
 };
 
-export const submitTx = async (tx: Transaction, wallet: BrowserWallet) => {
+export const submitTx = async (tx: Transaction, wallet: IWallet) => {
   if (debug) logTx(tx);
   const unsignedTx = await tx.build();
   if (debug) console.log('[unsignedTx]', unsignedTx);
