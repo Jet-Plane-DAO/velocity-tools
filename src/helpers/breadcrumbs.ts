@@ -19,6 +19,15 @@ export type TxBreadcrumbPhase =
   | 'attempt-initiated'
   | 'submitted'
   | 'succeeded'
+  /**
+   * A precondition stopped the attempt before any transaction was built, and
+   * the user has to clear it first. Neither a success nor a failure.
+   *
+   * Without it a consumer has to pick one of the two, and picking `succeeded`
+   * hides the user: ff's collateral gate returned early, so eight consecutive
+   * blocked cancels on 2 Oct 2026 were all recorded as successes.
+   */
+  | 'blocked'
   | 'user-declined'
   | 'engine-unreachable'
   | 'failed';
